@@ -1,8 +1,33 @@
 from pathlib import Path
+import re
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def parse_manifest(text: str) -> dict[str, object]:
+    match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+    if not match:
+        raise ValueError("manifest frontmatter is missing")
+    data: dict[str, object] = {}
+    active_list: str | None = None
+    for raw_line in match.group(1).splitlines():
+        if raw_line.startswith("  - ") and active_list:
+            value = raw_line[4:].strip()
+            cast = data[active_list]
+            assert isinstance(cast, list)
+            cast.append(value)
+        elif ":" in raw_line:
+            key, value = raw_line.split(":", 1)
+            key, value = key.strip(), value.strip()
+            if value:
+                data[key] = value
+                active_list = None
+            else:
+                data[key] = []
+                active_list = key
+    return data
 
 
 class SkillContractTests(unittest.TestCase):
@@ -130,6 +155,36 @@ class SkillContractTests(unittest.TestCase):
         ):
             self.assertIn(required, text)
         self.assertIn("source must support", text)
+
+
+class RepositoryIntegrityTests(unittest.TestCase):
+    def test_business_direction_manifest(self) -> None:
+        path = ROOT / "chains" / "business-direction.md"
+        manifest = parse_manifest(path.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["name"], "business-direction")
+        skills = manifest["skills"]
+        self.assertIsInstance(skills, list)
+        self.assertEqual(len(skills), len(set(skills)))
+        self.assertIn(manifest["entrypoint"], skills)
+        for name in skills:
+            self.assertTrue((ROOT / "skills" / name / "SKILL.md").is_file())
+
+    def test_catalog_links_exist(self) -> None:
+        for relative in (
+            "LICENSE",
+            "chains/business-direction.md",
+            "docs/authoring.md",
+            "docs/installation/claude-code.md",
+            "docs/installation/codex.md",
+        ):
+            self.assertTrue((ROOT / relative).is_file(), relative)
+
+    def test_canonical_skills_are_vendor_neutral(self) -> None:
+        banned = ("~/.claude", ".codex/skills", "AskUserQuestion")
+        for path in (ROOT / "skills").glob("*/SKILL.md"):
+            text = path.read_text(encoding="utf-8")
+            for token in banned:
+                self.assertNotIn(token, text, f"{token} in {path}")
 
 
 if __name__ == "__main__":
