@@ -179,6 +179,18 @@ class RepositoryIntegrityTests(unittest.TestCase):
         ):
             self.assertTrue((ROOT / relative).is_file(), relative)
 
+    def test_claude_code_guide_distinguishes_plugin_invocation(self) -> None:
+        path = ROOT / "docs" / "installation" / "claude-code.md"
+        text = path.read_text(encoding="utf-8")
+        self.assertRegex(
+            text,
+            r"Personal or project skills: `/business-direction`",
+        )
+        self.assertRegex(
+            text,
+            r"Plugin skill: `/<plugin-name>:business-direction`",
+        )
+
     def test_canonical_skills_are_vendor_neutral(self) -> None:
         banned = ("~/.claude", ".codex/skills", "AskUserQuestion")
         for path in (ROOT / "skills").glob("*/SKILL.md"):
