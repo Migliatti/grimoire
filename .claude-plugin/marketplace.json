@@ -1,0 +1,18 @@
+{
+  "name": "migliatti",
+  "description": "Gabriel Migliatti's catalog of reusable agent skills and chains.",
+  "owner": {
+    "name": "Gabriel Migliatti"
+  },
+  "plugins": [
+    {
+      "name": "grimoire",
+      "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, starting with evidence-backed business planning.",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "Gabriel Migliatti"
+      }
+    }
+  ]
+}

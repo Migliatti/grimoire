@@ -17,13 +17,13 @@ The same source states that Claude Code discovers project skills from the starti
 Invocation depends on the installation scope documented by that source:
 
 - Personal or project skills: `/business-direction`
-- Plugin skill: `/<plugin-name>:business-direction`, where `<plugin-name>` is the namespace declared by the installed plugin.
+- Plugin skill: `/grimoire:business-direction`, because `grimoire` is the plugin name declared in this repository's `.claude-plugin/plugin.json`.
 
 Those are Claude Code host rules. They are not canonical paths in this repository.
 
 ## Clone and copy this catalog
 
-1. Clone or download `my-skills` to a location you control.
+1. Clone or download `grimoire` to a location you control.
 2. Read [`chains/business-direction.md`](../../chains/business-direction.md) to see the exact eight skill directories required by the complete chain.
 3. Choose the personal or project Claude Code scope from the table above.
 4. Copy each selected canonical directory from `skills/<skill-name>/` into the corresponding `<skill-name>/` directory at that scope. Preserve `SKILL.md` and any sibling resources, scripts, or assets.
@@ -37,7 +37,25 @@ For a project-scoped installation, the resulting layout for one skill is:
 
 For the complete chain, repeat the copy for all eight names in the manifest. Copying only a standalone-capable skill is sufficient only for that skill's documented standalone flow.
 
-The plugin row describes a plugin's package layout, not another direct local-copy scope. This repository does not define a Claude Code plugin name or plugin manifest. If you package these skills in a plugin, follow Anthropic's plugin installation workflow and invoke the installed entrypoint as `/<plugin-name>:business-direction`, replacing the marked placeholder with that plugin's declared namespace.
+The plugin row describes a plugin's package layout, not another direct local-copy scope. To install every skill at once instead of copying directories, use the plugin route below.
+
+## Install as a plugin
+
+This repository is also packaged as a Claude Code plugin and publishes itself as a marketplace:
+
+| File | Role |
+|---|---|
+| `.claude-plugin/plugin.json` | Declares the plugin name `grimoire`, its version, and its metadata |
+| `.claude-plugin/marketplace.json` | Declares the marketplace `migliatti`, whose only plugin is this repository |
+
+The plugin exposes the canonical `skills/` directory as-is, so a plugin install and a manual copy deliver the same instructions.
+
+```shell
+/plugin marketplace add Migliatti/grimoire
+/plugin install grimoire@migliatti
+```
+
+Installed this way, every skill is namespaced by the plugin, so the chain entrypoint is `/grimoire:business-direction`. Anthropic's plugin workflow, including the `/plugin` interface and the `claude plugin` CLI, is documented on the official plugins page; consult it for the current install, update, and removal commands.
 
 ## Updating
 

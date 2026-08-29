@@ -1,9 +1,12 @@
 from pathlib import Path
+import json
 import re
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PLUGIN_NAME = "grimoire"
+MARKETPLACE_NAME = "migliatti"
 
 
 def parse_manifest(text: str) -> dict[str, object]:
@@ -199,7 +202,7 @@ class RepositoryIntegrityTests(unittest.TestCase):
         )
         self.assertRegex(
             text,
-            r"Plugin skill: `/<plugin-name>:business-direction`",
+            r"Plugin skill: `/%s:business-direction`" % PLUGIN_NAME,
         )
 
     def test_canonical_skills_are_vendor_neutral(self) -> None:
@@ -208,6 +211,53 @@ class RepositoryIntegrityTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             for token in banned:
                 self.assertNotIn(token, text, f"{token} in {path}")
+
+
+class PackagingManifestTests(unittest.TestCase):
+    def load(self, relative: str) -> dict[str, object]:
+        path = ROOT / relative
+        self.assertTrue(path.is_file(), relative)
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def test_claude_plugin_manifest(self) -> None:
+        manifest = self.load(".claude-plugin/plugin.json")
+        self.assertEqual(manifest["name"], PLUGIN_NAME)
+        for field in ("description", "version", "license", "repository"):
+            self.assertTrue(manifest.get(field), field)
+
+    def test_marketplace_lists_this_plugin(self) -> None:
+        marketplace = self.load(".claude-plugin/marketplace.json")
+        self.assertEqual(marketplace["name"], MARKETPLACE_NAME)
+        plugins = marketplace["plugins"]
+        self.assertIsInstance(plugins, list)
+        entries = [entry for entry in plugins if entry["name"] == PLUGIN_NAME]
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["source"], "./")
+
+    def test_codex_plugin_manifest_points_at_canonical_skills(self) -> None:
+        manifest = self.load(".codex-plugin/plugin.json")
+        self.assertEqual(manifest["name"], PLUGIN_NAME)
+        skills_dir = ROOT / str(manifest["skills"])
+        self.assertTrue(skills_dir.is_dir())
+        self.assertEqual(skills_dir.resolve(), (ROOT / "skills").resolve())
+
+    def test_packaged_version_is_consistent(self) -> None:
+        claude = self.load(".claude-plugin/plugin.json")
+        codex = self.load(".codex-plugin/plugin.json")
+        marketplace = self.load(".claude-plugin/marketplace.json")
+        entry = next(
+            item for item in marketplace["plugins"] if item["name"] == PLUGIN_NAME
+        )
+        self.assertEqual(claude["version"], codex["version"])
+        self.assertEqual(claude["version"], entry["version"])
+
+    def test_packaged_plugin_exposes_every_chain_skill(self) -> None:
+        manifest = parse_manifest(
+            (ROOT / "chains" / "business-direction.md").read_text(encoding="utf-8")
+        )
+        skills_dir = ROOT / str(self.load(".codex-plugin/plugin.json")["skills"])
+        for name in manifest["skills"]:
+            self.assertTrue((skills_dir / name / "SKILL.md").is_file(), name)
 
 
 if __name__ == "__main__":

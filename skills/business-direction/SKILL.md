@@ -27,9 +27,9 @@ Derive a short, stable kebab-case `<slug>` from the direction. Use exactly one p
 
 ```text
 Git project: <repository-root>/docs/business-direction/<slug>/
-Windows outside Git: %LOCALAPPDATA%/my-skills/business-direction/<slug>/
-macOS outside Git: ~/Library/Application Support/my-skills/business-direction/<slug>/
-Linux outside Git: ${XDG_DATA_HOME:-~/.local/share}/my-skills/business-direction/<slug>/
+Windows outside Git: %LOCALAPPDATA%/grimoire/business-direction/<slug>/
+macOS outside Git: ~/Library/Application Support/grimoire/business-direction/<slug>/
+Linux outside Git: ${XDG_DATA_HOME:-~/.local/share}/grimoire/business-direction/<slug>/
 ```
 
 Within that root, maintain `state.md`, `evidence/index.md`, `evidence/baseline.md` when baseline records are material, and one `evidence/<department>.md` file for each relevant department that needs persistent evidence. Create a department evidence file only for a relevant department; do not create placeholders for irrelevant departments.

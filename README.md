@@ -1,12 +1,23 @@
-# my-skills
+# grimoire
 
 ## Why this repository exists
 
-`my-skills` is a tool-agnostic catalog of reusable agent skills and composed workflows. Each skill has one canonical implementation under `skills/`; host-specific discovery paths and installation steps live only in the installation guides.
+`grimoire` is a tool-agnostic catalog of reusable agent skills and composed workflows. Each skill has one canonical implementation under `skills/`; host-specific discovery paths and installation steps live only in the installation guides.
 
 The repository keeps reusable behavior separate from platform packaging so the same canonical instructions can be reviewed, evaluated, and adapted without maintaining vendor-specific copies.
 
 ## Quick start
+
+In Claude Code, install the whole catalog as a plugin from this repository's own marketplace:
+
+```shell
+/plugin marketplace add Migliatti/grimoire
+/plugin install grimoire@migliatti
+```
+
+Then invoke the chain entrypoint as `/grimoire:business-direction`.
+
+To install by hand instead, or to install on another host:
 
 1. Clone or download this repository.
 2. Choose a [chain](#chains) for an end-to-end workflow or a [standalone skill](#standalone-skills) for a focused task.
@@ -40,14 +51,18 @@ chains/<chain-name>.md         Chain composition and guide
 docs/authoring.md              Authoring and contribution rules
 docs/installation/             Verified host-specific guidance
 tests/                         Contracts and behavioral evaluations
+.claude-plugin/                Claude Code plugin and marketplace manifests
+.codex-plugin/                 Codex plugin manifest
 ```
+
+The packaging manifests declare metadata only. They point at the same canonical `skills/` directory, so a plugin install and a manual copy deliver identical instructions.
 
 ## Compatibility and installation
 
 The canonical skill format is designed to stay host-neutral. The repository currently documents discovery and installation only where current official sources establish the behavior:
 
-- [Claude Code installation](docs/installation/claude-code.md)
-- [Codex installation](docs/installation/codex.md)
+- [Claude Code installation](docs/installation/claude-code.md) — personal, project, or plugin scope
+- [Codex installation](docs/installation/codex.md) — repository, user, or admin scope
 
 These guides document discovery, not a claim that every skill behavior has been compatibility-tested on every interface or release. Review the relevant official documentation and the repository's behavioral results before relying on a workflow in a new environment.
 

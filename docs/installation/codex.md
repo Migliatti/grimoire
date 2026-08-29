@@ -19,7 +19,7 @@ These are Codex host rules. They are not canonical paths in this repository.
 
 ## Clone and copy this catalog
 
-1. Clone or download `my-skills` to a location you control.
+1. Clone or download `grimoire` to a location you control.
 2. Read [`chains/business-direction.md`](../../chains/business-direction.md) to see the exact eight skill directories required by the complete chain.
 3. Choose a verified Codex repository or user discovery scope from the table above. Use an admin scope only when it is actually managed for that environment.
 4. Copy each selected canonical directory from `skills/<skill-name>/` into the corresponding `<skill-name>/` directory under the chosen `skills` location. Preserve `SKILL.md` and any sibling resources, scripts, assets, or metadata.
@@ -32,6 +32,12 @@ For a repository-scoped installation at the repository root, one installed skill
 ```
 
 For the complete chain, repeat the copy for all eight names in the manifest. Copying only a standalone-capable skill is sufficient only for that skill's documented standalone flow.
+
+## Plugin packaging
+
+This repository also ships a Codex plugin manifest at `.codex-plugin/plugin.json`. It declares the plugin name `grimoire`, points `skills` at the same canonical `./skills/` directory used by the copy procedure above, and carries the interface metadata Codex uses to present a skill package.
+
+The manifest is provided so this catalog can be distributed through Codex's plugin workflow rather than copied by hand. Follow OpenAI's current plugin distribution documentation for the actual install command; this repository does not claim a verified end-to-end plugin install flow, only that the manifest describes the same canonical skills.
 
 ## Updating
 

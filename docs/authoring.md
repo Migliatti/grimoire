@@ -53,6 +53,12 @@ The four fields are required. Every item in `skills` must be unique and resolve 
 
 A skill may appear in multiple manifests. Reuse the same canonical path rather than forking its contents.
 
+## Packaging manifests
+
+Host packaging lives in hidden manifest directories at the repository root: `.claude-plugin/` for the Claude Code plugin and its marketplace entry, and `.codex-plugin/` for the Codex plugin. These files declare metadata and point at the canonical `skills/` directory; they never contain skill instructions and never fork a canonical `SKILL.md`.
+
+When the packaged version changes, change it in every manifest at once. The repository integrity tests assert that the plugin name, version, and skills target stay consistent across manifests and that the packaged plugin exposes every skill named by a chain.
+
 ## Behavioral RED/GREEN evaluation
 
 Evaluate instruction changes against realistic prompts and observable pass criteria:

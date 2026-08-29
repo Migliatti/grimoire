@@ -1,0 +1,37 @@
+{
+  "name": "grimoire",
+  "version": "0.1.0",
+  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, starting with evidence-backed business planning.",
+  "author": {
+    "name": "Gabriel Migliatti",
+    "url": "https://github.com/Migliatti"
+  },
+  "homepage": "https://github.com/Migliatti/grimoire",
+  "repository": "https://github.com/Migliatti/grimoire",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "business-planning",
+    "research",
+    "strategy",
+    "workflows"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Grimoire",
+    "shortDescription": "Evidence-backed business planning, department by department",
+    "longDescription": "Grimoire turns a business direction into an evidence-aware plan. It establishes a baseline, selects the relevant departments, asks before assuming, researches material uncertainties, drafts Product, Marketing, Sales, Finance, and Operations, and closes with a cross-department synthesis. Planning state is persisted so a long effort can be resumed later.",
+    "developerName": "Gabriel Migliatti",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "I want to plan a new business direction.",
+      "Resume the business plan I started earlier."
+    ],
+    "websiteURL": "https://github.com/Migliatti/grimoire"
+  }
+}

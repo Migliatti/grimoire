@@ -1,0 +1,18 @@
+{
+  "name": "grimoire",
+  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, starting with evidence-backed business planning.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Gabriel Migliatti"
+  },
+  "homepage": "https://github.com/Migliatti/grimoire",
+  "repository": "https://github.com/Migliatti/grimoire",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "business-planning",
+    "research",
+    "strategy",
+    "workflows"
+  ]
+}
