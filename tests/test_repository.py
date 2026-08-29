@@ -116,6 +116,21 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn("Do not draft", text)
             self.assertIn("user answers", text)
 
+    def test_strategy_synthesis_contract(self) -> None:
+        text = self.read_skill("strategy-synthesis")
+        for required in (
+            "user's language",
+            "Evidence IDs",
+            "material factual claims",
+            "critical blocker",
+            "provisional assumptions",
+            "Validation experiments",
+            "stale",
+            "drafted",
+        ):
+            self.assertIn(required, text)
+        self.assertIn("source must support", text)
+
 
 if __name__ == "__main__":
     unittest.main()

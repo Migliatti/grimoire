@@ -1,49 +1,103 @@
 ---
 name: strategy-synthesis
-description: Use when todos os departamentos relevantes de uma direção de negócio (`business-direction`) já têm seção redigida e é hora de cruzar as informações entre eles, priorizar e sequenciar os próximos passos. Sempre a última etapa do fluxo — nunca substitui as subskills de departamento.
+description: Use when business-direction has drafted every relevant department and needs an evidence-aware cross-department strategy synthesis.
 ---
 
-# strategy-synthesis
+# Strategy Synthesis
 
-## Overview
+## Purpose
 
-Recebe as seções já redigidas de todos os departamentos relevantes de uma linha de planejamento e produz a síntese final: cruza informações entre departamentos, aponta incoerências, prioriza e sequencia próximos passos concretos. Não gera perguntas próprias nem reabre departamentos — isso é trabalho de `business-direction` e das subskills de departamento.
+Produce the final cross-department strategy synthesis only through the
+`business-direction` orchestrated flow. Write the synthesis in the user's language.
+This skill does not research, make unsupported decisions, reopen a
+department, or replace department skills.
 
-## Pré-condição
+## Input boundary and readiness gate
 
-Só rode depois que **todos** os departamentos relevantes estiverem com `status: sintetizado` no `state.md`. Se algum ainda estiver `pending` ou `perguntado`, isso é um sinal de que `business-direction` te invocou cedo demais — recuse e aponte qual departamento falta.
+Consume only relevant departments whose state is `drafted`. From each such
+department, use only its evidence IDs, confidence, assumptions, blockers, and
+validation actions. Do not infer missing inputs, use a department that is not
+`drafted`, or silently replace a department's stated uncertainty.
 
-## O que fazer
+Before writing, inspect the relevant-departments list and state:
 
-### 1. Cruzar informações entre departamentos
+| Condition | Required response |
+| --- | --- |
+| Any relevant department is not `drafted` | Refuse synthesis and name each department and its current state. Return control to `business-direction`. |
+| Any relevant department is `stale` | Refuse synthesis. A stale department must be refreshed and drafted again before comparison. |
+| A global critical blocker is recorded | Stop; report the critical blocker, affected departments, and its validation action. Do not produce execution steps that assume it is resolved. |
+| All relevant departments are `drafted`, current, and no global critical blocker exists | Continue with the evidence-aware synthesis below. |
 
-Procure especificamente por incompatibilidades entre seções, por exemplo:
+Treat a blocker as global when it prevents the direction as a whole from being
+executed or invalidates a dependency used by multiple departments. Preserve
+department-specific blockers in the output; do not escalate them unless the
+drafted evidence shows that they are global.
 
-- O preço/pacote implícito em Vendas é compatível com o custo variável descrito em Financeiro?
-- O esforço de MVP descrito em Produto cabe no prazo/capital descrito em Financeiro?
-- O canal de aquisição de Marketing alcança o ICP que Vendas está desenhando o funil para atender?
-- O time mínimo viável de Operações dá conta do volume que Vendas/Marketing esperam gerar?
+## Evidence rules
 
-Liste cada incompatibilidade encontrada como um risco explícito — não tente resolver sozinho decisões que são do usuário (ex.: "o preço proposto não cobre o custo variável estimado; ajuste um dos dois" em vez de simplesmente escolher um número novo).
+- All material factual claims must cite their evidence IDs and confidence.
+- The source must support the claim, not merely exist in the evidence index.
+- Put insufficiently supported conclusions in provisional assumptions, state why
+  they remain provisional, and attach their validation actions.
+- Keep confidence and uncertainty visible when comparing departments. Do not
+  turn estimates, assumptions, or unvalidated hypotheses into facts.
+- Reuse the supplied evidence IDs; do not browse for, manufacture, or silently
+  substitute evidence during synthesis.
 
-### 2. Priorizar e sequenciar
+## Cross-department checks
 
-Produza uma lista curta de próximos passos concretos, ordenados, cobrindo o horizonte imediato (tipicamente 30-60-90 dias ou equivalente à natureza da direção). Cada passo deve ser acionável, não um objetivo vago.
+Compare the drafted inputs rather than summarizing each department in isolation.
+Always check and report whether the evidence supports these relationships:
 
-### 3. Gravar a síntese
+1. Price and package versus variable and fixed costs.
+2. MVP scope and effort versus available capital and timing.
+3. Acquisition channel versus the ICP and sales funnel it is expected to reach.
+4. Expected demand versus operational capacity, staffing, and delivery limits.
 
-Escreva o resultado na seção `## Síntese` do `state.md` (topo ou fim do arquivo), formato:
+For each mismatch, identify the departments involved, the incompatible inputs,
+the evidence IDs and confidence, its consequence, and the validation action or
+decision required. Do not select a price, timeline, channel, capacity, or other
+business decision for the user.
+
+## Output contract
+
+Write the completed result to the synthesis field of the orchestrated planning
+state, with exactly these headings. Use `None identified` only after checking
+the relevant drafted inputs; never omit a section.
 
 ```markdown
-## Síntese
-**Riscos/incoerências entre departamentos:** ...
-**Próximos passos priorizados:** ...
+## Synthesis
+
+### Cross-department conflicts
+- [Conflict, affected departments, consequence, evidence IDs, confidence, and required action]
+
+### Provisional assumptions
+- [Assumption, why it remains provisional, confidence, evidence IDs, and validation action]
+
+### Critical blockers
+- [Blocker, scope, affected departments, evidence IDs, confidence, and validation action]
+
+### Prioritized execution steps
+1. [Actionable step, owner/department, dependency, expected outcome, and evidence IDs]
+
+### Validation experiments
+- [Experiment, hypothesis, method, success/failure signal, decision it unlocks, and evidence IDs]
+
+### Evidence IDs
+- [Evidence ID: the specific claims, conflicts, assumptions, blockers, steps, or experiments it supports]
 ```
 
-## Erros comuns
+Prioritize execution steps by dependency, reversibility, risk, and decision
+impact. Each validation experiment must trace to an unresolved provisional
+assumption, blocker, or conflict and should be the smallest action that can
+change the next decision. Do not write synthesis outside this orchestrated flow.
 
-| Erro | Por quê é errado |
-|---|---|
-| Rodar com departamento ainda não `sintetizado` | Produz síntese incompleta ou contraditória com o que aquele departamento ainda vai decidir |
-| Resolver sozinho uma incoerência entre departamentos (ex.: escolher o preço) | Decisão é do usuário; o papel aqui é apontar o conflito, não decidir por ele |
-| Repetir o conteúdo de cada seção em vez de cruzar informação entre elas | Síntese vira resumo, não análise — o valor está no cruzamento |
+## Common mistakes
+
+| Mistake | Why it fails | Required correction |
+| --- | --- | --- |
+| Synthesizing a pending, questioning, researching, ready, or stale department | The comparison is incomplete or outdated. | Refuse and return control until every relevant department is `drafted` and current. |
+| Citing an unrelated source | An evidence ID alone does not establish a claim. | Verify that the source must support the exact claim. |
+| Hiding estimates as facts | This creates false certainty. | Put them under provisional assumptions with confidence and validation actions. |
+| Repeating department narratives | A synthesis must expose interactions and dependencies. | Perform all four cross-department checks and report their result. |
+| Resolving the user's business decision | The orchestrator is not the decision maker. | State the conflict, trade-off, and validation action instead. |
