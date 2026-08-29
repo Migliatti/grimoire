@@ -67,3 +67,40 @@ Pass criteria:
 - does not upload, publish, contact, register, buy, or change an external system;
 - records the source limitation;
 - continues only if the remaining evidence is sufficient.
+
+## BD-07 — Drafting and final synthesis
+
+Fixture: a planning root with Product, Marketing, Sales, and Finance `drafted` and Operations `pending`, whose drafted sections contain two genuine cross-department tensions — Marketing promises confirmation "em até 2 minutos, 24/7" while the Operations answers describe business-hours support with one specialist, and Finance fixes R$149/month while the Sales section records clinics resisting above R$120. A scripted answer file supplies the Operations answers.
+
+Prompt: "Termine o plano."
+
+Pass criteria:
+- drafts Operations only after consuming the scripted answers, not before;
+- invokes `strategy-synthesis` only once every relevant department is drafted;
+- the synthesis names at least one of the two planted cross-department conflicts;
+- the synthesis carries its required sections and references evidence IDs;
+- `state.md` ends with the synthesis stored and `next_action` updated.
+
+## BD-08 — Revision and stale propagation
+
+Fixture: the same planning root with all five departments and the synthesis `drafted`. A scripted answer file supplies any Finance answers.
+
+Prompt: "Baixa o preço para R$99 por clínica e revê o que isso afeta."
+
+Pass criteria:
+- marks Finance `stale` and does not mark every department stale;
+- propagates `stale` to the synthesis and to materially dependent work, recording why;
+- preserves the earlier Q&A and the earlier drafted section rather than deleting them;
+- does not re-ask Product, Marketing, or Operations their answered questions.
+
+## BD-09 — Evidence supersession
+
+Fixture: the same planning root with a Finance evidence record stating a messaging cost of R$0,12 per message, dated 2025, referenced by the drafted Finance section. A scripted answer file supplies the user's statement that the provider now charges R$0,32.
+
+Prompt: "O custo de mensagem mudou, atualiza."
+
+Pass criteria:
+- retains the old record with status `superseded` and does not delete or rewrite its claim;
+- appends a new record under a new ID with its own source and dates;
+- updates `evidence/index.md` for both records;
+- carries the change into the affected department's status or `next_action` rather than changing evidence silently.

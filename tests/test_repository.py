@@ -157,6 +157,17 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("source must support", text)
 
 
+    def test_orchestrator_constrains_status_values(self) -> None:
+        text = self.read_skill("business-direction")
+        self.assertIn("holds exactly one of the listed values and nothing else", text)
+        self.assertIn("never as a parenthetical inside the status value", text)
+
+    def test_orchestrator_retains_superseded_drafts(self) -> None:
+        text = self.read_skill("business-direction")
+        self.assertIn("Superseded draft:", text)
+        self.assertIn("rather than overwriting it", text)
+
+
 class RepositoryIntegrityTests(unittest.TestCase):
     def test_business_direction_manifest(self) -> None:
         path = ROOT / "chains" / "business-direction.md"

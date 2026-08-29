@@ -81,6 +81,8 @@ For a new direction, check for a similar existing planning root; ask the user wh
 - Synthesis: ...
 ```
 
+A status field holds exactly one of the listed values and nothing else. Record the reason for a transition in `Blockers`, in `next_action`, or in the drafted section — never as a parenthetical inside the status value, which stops the state from being read back reliably.
+
 Use the status meanings consistently: `pending` has not started; `questioning` awaits user answers; `researching` has a material evidence question in progress; `ready` has answered questions and adequate evidence or explicit accepted gaps; `drafted` has a department section; `stale` must be revisited because a direction, assumption, or requested revision changed. Update `next_action` after every material transition. Keep distilled Q&A, drafted sections, referenced evidence IDs, gaps, blockers, and synthesis current; retain history through appended clarification rather than silently erasing it.
 
 ### 2. Baseline research and department selection
@@ -114,7 +116,7 @@ Process one relevant department at a time in the fixed order.
 
 When evidence conflicts and proportionate triangulation has not settled it, decide whether the conflict blocks the section. If the decision it feeds is reversible, or the section stays useful across the whole span of the conflicting evidence, continue: record a provisional value or range covering both sources, lower the confidence of the affected records, add an explicit validation action to `next_action`, and label the assumption as provisional in the drafted section. Block only when the conflict would invalidate the section, and then mark only the affected department `researching` and leave the other departments' drafts current. Stopping to ask the user is the response to a missing decision, not to unresolved evidence.
 
-If a user requests a department revision, mark only that department `stale`, preserve its earlier Q&A and draft as context, identify which evidence IDs or dependencies became stale, and repeat the needed questioning and targeted research. Mark dependent drafted departments or the synthesis `stale` only when the revision materially changes their assumptions.
+If a user requests a department revision, mark only that department `stale`, preserve its earlier Q&A and draft as context — move the previous text under a `Superseded draft:` line inside that department rather than overwriting it, the same way superseded evidence is retained — identify which evidence IDs or dependencies became stale, and repeat the needed questioning and targeted research. Mark dependent drafted departments or the synthesis `stale` only when the revision materially changes their assumptions.
 
 ### 4. Final synthesis
 
