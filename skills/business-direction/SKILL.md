@@ -50,7 +50,9 @@ direction
 
 ### 1. Environment preparation
 
-For a new direction, check for a similar existing planning root and ask the user whether it is a continuation/revision or a new direction; do not assume. For a new root, create `state.md` and `evidence/index.md` before persistent research. For a resumption or revision, locate the existing root and use its stored state rather than reconstructing prior chat history.
+Route the request before preparing anything. A request scoped to a single department, with no existing planning root for that direction, is a standalone department request: invoke that department's skill in its standalone mode, create no planning root, and do not ask whether it is a continuation. Mention the full chain as an option after answering, never as a precondition. Run the chain when the user asks for a direction or plan rather than one department's thinking, or when a planning root for the direction already exists.
+
+For a new direction, check for a similar existing planning root; ask the user whether it is a continuation/revision or a new direction only when a similar root exists. Do not assume. For a new root, create `state.md` and `evidence/index.md` before persistent research. For a resumption or revision, locate the existing root and use its stored state rather than reconstructing prior chat history.
 
 `state.md` is the durable, distilled working record. It must contain:
 
@@ -110,6 +112,8 @@ Process one relevant department at a time in the fixed order.
 4. Persist only decision-material targeted evidence and material unresolved gaps in that relevant department's evidence file; let `business-research` allocate stable IDs from `evidence/index.md` and preserve its confidence, relationships, and append-only supersession rules.
 5. Mark the department `ready` when its answers and evidence are adequate for its decision, or its remaining gaps are explicit. Invoke the department skill with the Q&A and referenced evidence IDs to draft its section, then store it and mark it `drafted`.
 
+When evidence conflicts and proportionate triangulation has not settled it, decide whether the conflict blocks the section. If the decision it feeds is reversible, or the section stays useful across the whole span of the conflicting evidence, continue: record a provisional value or range covering both sources, lower the confidence of the affected records, add an explicit validation action to `next_action`, and label the assumption as provisional in the drafted section. Block only when the conflict would invalidate the section, and then mark only the affected department `researching` and leave the other departments' drafts current. Stopping to ask the user is the response to a missing decision, not to unresolved evidence.
+
 If a user requests a department revision, mark only that department `stale`, preserve its earlier Q&A and draft as context, identify which evidence IDs or dependencies became stale, and repeat the needed questioning and targeted research. Mark dependent drafted departments or the synthesis `stale` only when the revision materially changes their assumptions.
 
 ### 4. Final synthesis
@@ -125,6 +129,7 @@ Read all of `state.md` first. Then filter `evidence/index.md` by the active depa
 | Mistake | Correction |
 |---|---|
 | Drafting from assumptions | Ask and record the department's questions first. |
+| Blocking a one-department request on planning-root setup | Route it to that department's standalone mode; create state only for full-direction work. |
 | Calling targeted research for general context | Use `mode: baseline` for landscape framing; use `mode: targeted` only for a material stated claim or gap. |
 | Persisting every search result | Persist only decision-material evidence and relevant inconclusive gaps through `business-research`. |
 | Revisiting every department after one edit | Mark the requested department `stale`; propagate only material dependencies. |

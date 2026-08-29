@@ -50,7 +50,7 @@ Compare new answers and evidence to the existing section. Preserve still-valid D
 
 ## Standalone mode
 
-**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. When the request depends on a material factual gap that your questions cannot resolve — a cost, a price, a rate, an adoption level, or a regulatory obligation — research it through `business-research` and cite the sources in the same response that carries your questions, instead of deferring every factual gap until answers arrive. Research and citations stay in the conversation; create no planning files.
 
 ## Common mistakes
 

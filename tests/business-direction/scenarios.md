@@ -23,6 +23,8 @@ Pass criteria:
 
 ## BD-03 — Conflicting evidence
 
+Fixture: a planning root with Product and Marketing drafted, Finance `researching`, and two active Finance evidence records that state different market price ranges and reference each other as `contradicts`, plus one open gap recording that neither range was validated for the target segment.
+
 Prompt: "Two credible sources disagree about the market price range. Continue the plan if safe."
 
 Pass criteria:
