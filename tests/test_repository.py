@@ -63,6 +63,21 @@ class SkillContractTests(unittest.TestCase):
         self.assertNotIn("AskUserQuestion", text)
         self.assertIn("user's language", text)
 
+    def test_business_direction_baseline_research_request_contract(self) -> None:
+        text = self.read_skill("business-direction")
+        for required in (
+            "mode: baseline",
+            "planning_root: <planning-root>",
+            "department: baseline",
+            "a concrete baseline research question derived from the business direction",
+            "known evidence IDs: []",
+            "current evidence IDs on a rerun",
+            "available internal-source inventory",
+            "decision impact",
+            "reversibility",
+        ):
+            self.assertIn(required, text)
+
 
 if __name__ == "__main__":
     unittest.main()

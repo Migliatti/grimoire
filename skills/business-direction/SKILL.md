@@ -83,7 +83,20 @@ Use the status meanings consistently: `pending` has not started; `questioning` a
 
 ### 2. Baseline research and department selection
 
-Call `business-research` with `mode: baseline` before departments form recommendations. Supply the direction, planning root, available internal-source inventory, decision impact, reversibility, and candidate questions. Ask it for evidence and gaps, not a strategy decision. Persist only decision-material shared evidence in `evidence/baseline.md`, using the IDs and index rules of `business-research`.
+Call `business-research` before departments form recommendations with this complete baseline request:
+
+```text
+mode: baseline
+planning_root: <planning-root>
+department: baseline
+question: a concrete baseline research question derived from the business direction
+known evidence IDs: [] for a new planning line; current evidence IDs on a rerun
+available internal-source inventory: <compact inventory>
+decision impact: <impact>
+reversibility: <reversibility>
+```
+
+Ask it for evidence and gaps, not a strategy decision. Persist only decision-material shared evidence in `evidence/baseline.md`, using the IDs and index rules of `business-research`.
 
 Use the baseline evidence and the direction to select relevant departments. Record each selected department as `pending`; record why excluded departments are not relevant in the state. Baseline evidence can expose a missing department, but it does not authorize drafting one without user answers.
 
