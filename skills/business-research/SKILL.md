@@ -7,7 +7,7 @@ description: Use when a business-planning question needs current, attributable e
 
 ## Role and boundary
 
-You acquire and assess evidence; you do not make strategy decisions for the user or draft a department's final section. Return a traceable evidence base, explicit uncertainty, and open gaps so the requesting department can reason from it.
+You acquire and assess evidence; you do not make strategy decisions for the user or draft a department's final section. Return a traceable evidence base, explicit uncertainty, and open gaps so the requesting department can reason from it. Return the response and evidence explanations in the user's language unless the user requests otherwise.
 
 ## Input contract
 
@@ -66,7 +66,7 @@ Allocate evidence IDs as `E-0001`, `E-0002`, and subsequent zero-padded values, 
 
 ## Persistent mode
 
-Persistent mode requires `planning_root`. Store the evidence record in the relevant evidence file under that root and update only that file plus `evidence/index.md` with its ID, location, status, and a short claim or gap label. Do not rewrite other departments' evidence, historical records, or unrelated index entries. Preserve existing IDs and append a correction or supersession instead of silently editing historical evidence.
+Persistent mode requires `planning_root`. Persist only decision-material evidence and relevant inconclusive gaps, not every search result. Store each selected record in the relevant evidence file under that root and update only that file plus `evidence/index.md` with its ID, location, status, and a short claim or gap label. Do not rewrite other departments' evidence, historical records, or unrelated index entries. Preserve existing IDs and append a correction or supersession instead of silently editing historical evidence.
 
 ## Standalone mode
 
