@@ -1,130 +1,119 @@
 ---
 name: business-direction
-description: Use when the user aponta uma direção de negócio (nova ideia, pivô, ou revisão de um plano existente) e quer um plano pensado por departamento — marketing, vendas, produto, financeiro, operações — em vez de um plano genérico de uma vez só. Sintomas de que essa skill se aplica: "monta um plano de negócio pra X", "quero validar essa ideia", "retoma o planejamento de X", "atualiza o financeiro daquela direção".
+description: Use when a user introduces a new business direction, resumes a persistent business plan, or asks to revise one department of an existing direction.
 ---
 
-# business-direction
+# Business Direction
 
-## Overview
+## Role and boundary
 
-Orquestradora de um "CEO virtual": em vez de escrever um plano de negócio inteiro de uma vez (assumindo respostas), esta skill separa a análise por departamento, faz as perguntas de cada área ANTES de redigir qualquer seção, e persiste o progresso em disco para que o usuário possa interromper e retomar sem reprocessar a conversa inteira.
+Orchestrate evidence-backed, department-by-department business planning. Preserve the boundary that questions come before drafting: do not draft a department section until its decision-relevant questions have been answered by the user. Do not invent answers to make a plan seem complete.
 
-**Regra estrutural:** nenhuma seção de departamento é redigida sem que as perguntas daquele departamento tenham sido feitas ao usuário e respondidas. Pular perguntas e assumir respostas é o erro que esta skill existe para evitar — se você notar que está prestes a escrever uma seção com premissas próprias em vez de respostas do usuário, pare e pergunte primeiro.
+Accept a new direction, a resumption request, or a revision request for one department. Write responses, questions, and summaries in the user's language unless the user requests otherwise.
 
-## Quando usar
+Run departments in this order, skipping those that are not relevant: **Product → Marketing → Sales → Finance → Operations**. Invoke `strategy-synthesis` only after every relevant department is `drafted`, and always invoke it last.
 
-- Usuário aponta uma direção de negócio nova (produto, serviço, pivô) e quer plano estruturado.
-- Usuário quer retomar ou revisar uma linha de planejamento já iniciada.
-- Usuário quer atualizar só um departamento específico de um plano existente.
-
-**Quando NÃO usar:** usuário só quer pensar sobre uma área isolada, sem processo persistente — nesse caso invoque a subskill do departamento diretamente (`market-positioning`, `sales-pipeline`, `product-scope`, `financial-planning`, `operations-planning`), que responde só no chat sem gravar estado.
-
-## Departamentos e subskills
-
-Ordem fixa de execução (pula os não relevantes): **Product → Marketing → Sales → Finance → Operations**.
-
-| Departamento | Subskill |
+| Department | Skill |
 |---|---|
-| Produto | `product-scope` |
+| Product | `product-scope` |
 | Marketing | `market-positioning` |
-| Vendas | `sales-pipeline` |
-| Financeiro | `financial-planning` |
-| Operações | `operations-planning` |
+| Sales | `sales-pipeline` |
+| Finance | `financial-planning` |
+| Operations | `operations-planning` |
 
-Depois de todos os departamentos relevantes estarem `sintetizado`, invoque **sempre por último**: `strategy-synthesis`.
+## Planning root
 
-## Onde o estado vive
+Derive a short, stable kebab-case `<slug>` from the direction. Use exactly one planning root:
 
-- `docs/business-direction/<slug>/state.md` se o diretório de trabalho atual é um repositório git.
-- `~/.claude/business-direction/<slug>/state.md` caso contrário.
-
-`<slug>` é um kebab-case curto derivado da direção (ex.: "automação de agendamento pra clínicas" → `automacao-agendamento-clinicas`).
-
-## Fluxo
-
-```dot
-digraph business_direction_flow {
-    "Usuário aponta direção" [shape=box];
-    "Existe pasta com slug parecido?" [shape=diamond];
-    "Perguntar: nova direção ou continuação?" [shape=box];
-    "Carregar state.md existente" [shape=box];
-    "Decidir departamentos relevantes + criar state.md" [shape=box];
-    "Usuário pediu revisão de depto específico?" [shape=diamond];
-    "Marcar aquele depto como perguntado (com Q&A anterior de contexto)" [shape=box];
-    "Para cada depto pendente/perguntado, na ordem fixa" [shape=box];
-    "Todos departamentos relevantes sintetizados?" [shape=diamond];
-    "Invocar strategy-synthesis" [shape=box];
-    "Mostrar resumo + caminho do arquivo" [shape=box];
-
-    "Usuário aponta direção" -> "Existe pasta com slug parecido?";
-    "Existe pasta com slug parecido?" -> "Perguntar: nova direção ou continuação?" [label="sim"];
-    "Existe pasta com slug parecido?" -> "Decidir departamentos relevantes + criar state.md" [label="não"];
-    "Perguntar: nova direção ou continuação?" -> "Carregar state.md existente" [label="continuação"];
-    "Perguntar: nova direção ou continuação?" -> "Decidir departamentos relevantes + criar state.md" [label="nova direção"];
-    "Carregar state.md existente" -> "Usuário pediu revisão de depto específico?";
-    "Usuário pediu revisão de depto específico?" -> "Marcar aquele depto como perguntado (com Q&A anterior de contexto)" [label="sim"];
-    "Marcar aquele depto como perguntado (com Q&A anterior de contexto)" -> "Para cada depto pendente/perguntado, na ordem fixa";
-    "Usuário pediu revisão de depto específico?" -> "Para cada depto pendente/perguntado, na ordem fixa" [label="não"];
-    "Decidir departamentos relevantes + criar state.md" -> "Para cada depto pendente/perguntado, na ordem fixa";
-    "Para cada depto pendente/perguntado, na ordem fixa" -> "Todos departamentos relevantes sintetizados?";
-    "Todos departamentos relevantes sintetizados?" -> "Invocar strategy-synthesis" [label="sim"];
-    "Todos departamentos relevantes sintetizados?" -> "Para cada depto pendente/perguntado, na ordem fixa" [label="não, próximo depto"];
-    "Invocar strategy-synthesis" -> "Mostrar resumo + caminho do arquivo";
-}
+```text
+Git project: <repository-root>/docs/business-direction/<slug>/
+Windows outside Git: %LOCALAPPDATA%/my-skills/business-direction/<slug>/
+macOS outside Git: ~/Library/Application Support/my-skills/business-direction/<slug>/
+Linux outside Git: ${XDG_DATA_HOME:-~/.local/share}/my-skills/business-direction/<slug>/
 ```
 
-### 1. Identificar a linha de planejamento
+Within that root, maintain `state.md`, `evidence/index.md`, `evidence/baseline.md` when baseline records are material, and one `evidence/<department>.md` file for each relevant department that needs persistent evidence. Create a department evidence file only for a relevant department; do not create placeholders for irrelevant departments.
 
-Procure em `docs/business-direction/` (ou `~/.claude/business-direction/`) por uma pasta de slug semelhante à direção descrita. Se achar, pergunte ao usuário se é continuação/revisão dessa linha ou uma direção nova (não assuma).
+## Workflow
 
-### 2. Se for direção nova
+```text
+direction
+-> environment preparation
+-> baseline research
+-> department selection
+-> questioning
+-> targeted research when material
+-> ready
+-> drafted
+-> final synthesis
+```
 
-Decida quais departamentos são relevantes olhando para o conteúdo da direção — não rode departamentos que claramente não se aplicam (ex.: uma direção sem produto físico/digital novo pode não precisar de `product-scope`; uma direção sem intenção de venda direta pode ainda assim precisar de `sales-pipeline` se há monetização). Na dúvida, inclua o departamento — é mais barato perguntar e descobrir que não se aplica do que pular algo relevante.
+### 1. Environment preparation
 
-Crie a pasta e o `state.md` com uma seção por departamento relevante, todas com `status: pending`. Formato de cada seção:
+For a new direction, check for a similar existing planning root and ask the user whether it is a continuation/revision or a new direction; do not assume. For a new root, create `state.md` and `evidence/index.md` before persistent research. For a resumption or revision, locate the existing root and use its stored state rather than reconstructing prior chat history.
+
+`state.md` is the durable, distilled working record. It must contain:
 
 ```markdown
-## <departamento>
-status: pending
+# Business direction state
+- Schema version: 1
+- Direction: ...
+- Planning root: ...
+- Status: pending | questioning | researching | ready | drafted | stale
+- next_action: ...
 
-### Perguntas e respostas
-(vazio até ser perguntado)
+## Departments
+### Product
+- Status: pending | questioning | researching | ready | drafted | stale
+- Referenced evidence IDs: E-0001, G-0001
+- Gaps: ...
+- Blockers: ...
+- Distilled Q&A:
+  - Question: ...
+    Answer: ...
+- Drafted section: ...
 
-### Seção redigida
-(vazio até status = sintetizado)
+## Synthesis
+- Status: pending | drafted | stale
+- Referenced evidence IDs: ...
+- Synthesis: ...
 ```
 
-### 3. Se for continuação
+Use the status meanings consistently: `pending` has not started; `questioning` awaits user answers; `researching` has a material evidence question in progress; `ready` has answered questions and adequate evidence or explicit accepted gaps; `drafted` has a department section; `stale` must be revisited because a direction, assumption, or requested revision changed. Update `next_action` after every material transition. Keep distilled Q&A, drafted sections, referenced evidence IDs, gaps, blockers, and synthesis current; retain history through appended clarification rather than silently erasing it.
 
-Carregue o `state.md`. Departamentos `sintetizado` são pulados por padrão. Se o usuário pediu para revisitar um departamento específico ("atualiza o financeiro", "revê o marketing"), volte o status desse departamento para `perguntado`, mantendo o Q&A anterior visível como contexto para a subskill.
+### 2. Baseline research and department selection
 
-### 4. Por departamento pendente, um de cada vez, na ordem fixa
+Call `business-research` with `mode: baseline` before departments form recommendations. Supply the direction, planning root, available internal-source inventory, decision impact, reversibility, and candidate questions. Ask it for evidence and gaps, not a strategy decision. Persist only decision-material shared evidence in `evidence/baseline.md`, using the IDs and index rules of `business-research`.
 
-a. Invoque a subskill do departamento pedindo só as perguntas daquela área, dado o contexto da direção (e o Q&A anterior, se for revisão).
-b. Faça as perguntas ao usuário no chat (use `AskUserQuestion` quando as opções forem discretas; texto livre quando não forem) e aguarde resposta — não avance sem resposta.
-c. Repasse a resposta à subskill, que gera a seção redigida.
-d. Atualize o `state.md`: status → `sintetizado`, grave o Q&A completo e a seção redigida.
+Use the baseline evidence and the direction to select relevant departments. Record each selected department as `pending`; record why excluded departments are not relevant in the state. Baseline evidence can expose a missing department, but it does not authorize drafting one without user answers.
 
-Um departamento de cada vez — não acumule perguntas de vários departamentos numa única rodada; isso é o que permite ao usuário interromper entre departamentos sem perder progresso.
+### 3. Questioning, targeted research, and drafting
 
-### 5. Ao fim de todos os departamentos relevantes
+Process one relevant department at a time in the fixed order.
 
-Invoque `strategy-synthesis`, passando todas as seções já redigidas. Ela cruza informações entre departamentos (ex.: o preço do Sales é compatível com o esforço de MVP do Product?), prioriza e sequencia próximos passos. O resultado vai na seção `## Síntese` do `state.md`.
+1. Mark it `questioning` and invoke its department skill to produce only that department's decision-relevant questions, using the distilled state and relevant evidence IDs.
+2. Ask the user in chat and wait for answers. Do not batch unanswered questions from multiple departments and do not draft before answers are received.
+3. Record distilled Q&A. If an answer, claim, conflict, or gap could materially change the section, mark it `researching` and call `business-research` with `mode: targeted`. Supply the department, precise question, known evidence IDs, decision impact, reversibility, and planning root. Targeted research must verify, challenge, or qualify that claim rather than repeating baseline work.
+4. Persist only decision-material targeted evidence and material unresolved gaps in that relevant department's evidence file; let `business-research` allocate stable IDs from `evidence/index.md` and preserve its confidence, relationships, and append-only supersession rules.
+5. Mark the department `ready` when its answers and evidence are adequate for its decision, or its remaining gaps are explicit. Invoke the department skill with the Q&A and referenced evidence IDs to draft its section, then store it and mark it `drafted`.
 
-### 6. Fechamento
+If a user requests a department revision, mark only that department `stale`, preserve its earlier Q&A and draft as context, identify which evidence IDs or dependencies became stale, and repeat the needed questioning and targeted research. Mark dependent drafted departments or the synthesis `stale` only when the revision materially changes their assumptions.
 
-Mostre um resumo curto no chat e aponte o caminho do arquivo salvo.
+### 4. Final synthesis
 
-## Retomando uma linha existente
+When all relevant departments are `drafted`, call `strategy-synthesis` last with their drafted sections, explicit gaps and blockers, and referenced evidence IDs. Store the result under `## Synthesis`, mark it `drafted`, and set `next_action` to the next user decision or implementation action. Return a concise summary and the planning-root path.
 
-Ao retomar, leia **só o `state.md`** — nunca tente reconstruir contexto lendo transcrições de conversas passadas. O `state.md` já contém tudo destilado (perguntas, respostas, seções prontas); essa é a economia de token que torna o processo interrompível.
+## Selective loading on resumption
 
-## Erros comuns
+Read all of `state.md` first. Then filter `evidence/index.md` by the active department, active evidence IDs, and explicitly referenced baseline IDs. Read only the active department's evidence file and those explicitly referenced baseline entries. Never load every evidence file by default; load another department's file only when `state.md` identifies a material dependency or the user requests that department.
 
-| Erro | Por quê é errado |
+## Common mistakes
+
+| Mistake | Correction |
 |---|---|
-| Escrever a seção de um departamento sem ter perguntado antes | Vira plano genérico com premissas assumidas — exatamente o que esta skill existe para evitar |
-| Perguntar todos os departamentos de uma vez no início | Quebra a possibilidade de interromper/retomar por departamento e sobrecarrega o usuário |
-| Rodar `strategy-synthesis` antes de todos os departamentos relevantes estarem `sintetizado` | Síntese fica incompleta e pode gerar recomendações contraditórias |
-| Reprocessar a conversa inteira ao retomar em vez de ler o `state.md` | Desperdiça tokens e é exatamente o problema que a persistência resolve |
-| Rodar departamento claramente irrelevante "por garantia" | Cansa o usuário com perguntas fora de propósito; use a heurística de relevância |
+| Drafting from assumptions | Ask and record the department's questions first. |
+| Calling targeted research for general context | Use `mode: baseline` for landscape framing; use `mode: targeted` only for a material stated claim or gap. |
+| Persisting every search result | Persist only decision-material evidence and relevant inconclusive gaps through `business-research`. |
+| Revisiting every department after one edit | Mark the requested department `stale`; propagate only material dependencies. |
+| Loading all evidence on resumption | Follow Selective loading: state, filtered index, active file, and explicitly referenced baseline entries. |
+| Synthesizing early | Wait until every relevant department is `drafted`; call `strategy-synthesis` last. |

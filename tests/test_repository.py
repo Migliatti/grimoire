@@ -39,6 +39,30 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("relevant inconclusive gaps", text)
         self.assertIn("not every search result", text)
 
+    def test_business_direction_state_contract(self) -> None:
+        text = self.read_skill("business-direction")
+        for required in (
+            "Environment preparation",
+            "mode: baseline",
+            "mode: targeted",
+            "next_action",
+            "pending",
+            "questioning",
+            "researching",
+            "ready",
+            "drafted",
+            "stale",
+            "Selective loading",
+            "evidence/index.md",
+        ):
+            self.assertIn(required, text)
+
+    def test_business_direction_is_vendor_neutral(self) -> None:
+        text = self.read_skill("business-direction")
+        self.assertNotIn("~/.claude", text)
+        self.assertNotIn("AskUserQuestion", text)
+        self.assertIn("user's language", text)
+
 
 if __name__ == "__main__":
     unittest.main()
