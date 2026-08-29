@@ -1,51 +1,60 @@
 ---
 name: product-scope
-description: Use when pensando o departamento de Produto de uma direção de negócio — definir escopo de MVP, o que fica de fora, riscos técnicos e roteiro. Dispara junto com `business-direction`, ou isoladamente quando o usuário pede "pensa o produto dessa ideia" sem querer o fluxo completo.
+description: Use when defining a product department section for a business direction, including an MVP boundary, feasibility, dependencies, and success criteria.
 ---
 
-# product-scope
+# Product scope
 
-## Overview
+## Role and boundary
 
-Gera as perguntas de Produto para uma direção de negócio, e transforma as respostas em uma seção estruturada: escopo do MVP, o que fica fora, riscos técnicos e roteiro. Nunca escreve a seção sem antes ter as respostas — se chamado sem respostas, devolve só as perguntas.
+Turn a business direction into a product section. Consume the direction, prior Q&A when revising, distilled evidence entries, open gaps, and the persistent or standalone mode. Reply in the user's language.
 
-## Duas responsabilidades
+`business-research` owns evidence acquisition and the evidence registry. This skill does not browse, invent citations, make strategy decisions for the user, or persist research.
 
-### 1. Gerar perguntas (dado o contexto da direção)
+## Phase 1: Review available evidence
 
-Perguntas centrais de Produto — adapte à direção, mas cubra pelo menos:
+Read the direction and prior answers. Start with **Evidence available**: evidence IDs and supported facts, then unresolved or conflicting evidence. Evidence supports decisions; it does not make them.
 
-- Qual é o menor conjunto de funcionalidades que já resolve a dor principal (MVP real, não "versão 1 enxuta de tudo")?
-- O que fica **fora** de propósito nesta fase, mesmo que pareça óbvio incluir?
-- Existe alguma dependência técnica de risco (API de terceiro, dado que não existe ainda, regulação)?
-- Quem constrói isso e em quanto tempo, realisticamente?
-- Como o usuário vai saber que o MVP funcionou (critério de sucesso, não só "lançar")?
+## Phase 2: Ask informed questions
 
-Se estiver em uma revisão (Q&A anterior existe), não repita perguntas já respondidas — pergunte só o que mudou desde então.
+Ask only unanswered, decision-relevant questions; in revision mode, ask only what changed. **Do not draft** a product section until the **user answers** these questions.
 
-### 2. Redigir a seção (dado o Q&A)
+- What is the smallest testable solution for the core problem?
+- What is explicitly excluded from the first release?
+- Which technical, data, partner, or regulatory dependencies affect feasibility?
+- Who can build it and within what credible time constraint?
+- What observable success criteria would show the release works?
 
-Formato da seção redigida:
+## Phase 3: Identify material research gaps
+
+List **Material research gaps** only when a verifiable unknown could materially change scope, feasibility, or a dependency. For each, ask `business-research` for `mode: targeted` research with the question, decision impact, known Evidence IDs, and the result that would resolve it. Do not research user preferences, user decisions, or low-impact unknowns.
+
+## Phase 4: Draft the department section
+
+Draft only after answers are available and requested research returned or was consciously deferred. Preserve this distinction:
 
 ```markdown
-### Seção redigida
-**Escopo do MVP:** ...
-**Fora de escopo (por ora):** ...
-**Riscos técnicos:** ...
-**Roteiro (fases):** ...
-**Métricas de sucesso do produto:** ...
+### Product
+**Decisions:** user choices on the smallest testable solution, exclusions, and sequencing.
+**Evidence-backed facts:** statements supported by distilled evidence.
+**Estimates and assumptions:** feasibility, effort, or timing values with their basis.
+**Unvalidated hypotheses:** product beliefs still needing a test.
+**Conflicts:** contradictory evidence or answers and their consequence.
+**Evidence IDs:** IDs supporting the facts above.
+**Validation actions:** tests, owners, and thresholds for unresolved hypotheses.
 ```
 
-Baseie-se só no que o usuário respondeu — não complete lacunas com suposições. Se uma resposta ficar vaga demais para virar seção, isso é sinal de que a pergunta precisa ser refeita, não de preencher com uma suposição sua.
+## Revision mode
 
-## Uso isolado
+Compare new answers and evidence to the existing section. Preserve still-valid Decisions, ask only necessary follow-ups, mark superseded Evidence IDs, and surface Conflicts rather than silently overwriting them.
 
-Quando invocada fora do fluxo de `business-direction` (sem `state.md`), responda só no chat: pergunte, receba resposta, gere a seção — sem persistir nada em disco.
+## Standalone mode
 
-## Erros comuns
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
 
-| Erro | Por quê é errado |
-|---|---|
-| Assumir o MVP "óbvio" sem perguntar | O que é óbvio pra você pode não ser a prioridade real do usuário |
-| Misturar fase 1, 2 e 3 num único bloco de escopo | Perde a disciplina de "o que fica fora por ora", que é o ponto central desta subskill |
-| Preencher métricas de sucesso genéricas ("ter usuários") | Não é acionável; a métrica deve amarrar ao problema descrito na direção |
+## Common mistakes
+
+- Drafting an MVP before the user chooses its boundary and exclusions.
+- Treating an implementation estimate as an Evidence-backed fact.
+- Asking `business-research` to choose a product direction rather than research a material verifiable gap.
+- Hiding a dependency conflict rather than assigning a Validation action.

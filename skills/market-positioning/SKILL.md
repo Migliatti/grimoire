@@ -1,51 +1,60 @@
 ---
 name: market-positioning
-description: Use when pensando o departamento de Marketing de uma direção de negócio — posicionamento, ICP (perfil de cliente ideal) e canal de aquisição. Dispara junto com `business-direction`, ou isoladamente quando o usuário pede "pensa o marketing dessa ideia" sem querer o fluxo completo.
+description: Use when defining a marketing department section for a business direction, including ICP, alternatives, positioning, acquisition, and demand validation.
 ---
 
-# market-positioning
+# Market positioning
 
-## Overview
+## Role and boundary
 
-Gera as perguntas de Marketing para uma direção de negócio, e transforma as respostas em uma seção estruturada: posicionamento, ICP, canais e métricas. Nunca escreve a seção sem antes ter as respostas — se chamado sem respostas, devolve só as perguntas.
+Turn a business direction into a marketing section. Consume the direction, prior Q&A when revising, distilled evidence entries, open gaps, and the persistent or standalone mode. Reply in the user's language.
 
-## Duas responsabilidades
+`business-research` owns evidence acquisition and the evidence registry. This skill does not browse, invent citations, make strategy decisions for the user, or persist research.
 
-### 1. Gerar perguntas (dado o contexto da direção)
+## Phase 1: Review available evidence
 
-Perguntas centrais de Marketing — adapte à direção, mas cubra pelo menos:
+Read the direction and prior answers. Start with **Evidence available**: evidence IDs and supported facts, then unresolved or conflicting evidence. Evidence supports decisions; it does not make them.
 
-- Quem exatamente é o cliente ideal (ICP): segmento, tamanho, características que o diferenciam de "todo mundo que poderia comprar"?
-- Qual é o posicionamento — por que esse cliente escolheria isso em vez do que já usa hoje (concorrente direto, alternativa manual, ou "não fazer nada")?
-- Que canal(is) de aquisição fazem sentido dado o orçamento e o tempo disponíveis agora (outbound, conteúdo, parcerias, ads pagos)?
-- Existe validação de mercado já feita (conversas reais com clientes potenciais), ou isso ainda está por fazer?
-- Qual métrica de marketing importa mais agora (CAC, taxa de conversão lead→cliente, custo por lead)?
+## Phase 2: Ask informed questions
 
-Se estiver em uma revisão (Q&A anterior existe), não repita perguntas já respondidas — pergunte só o que mudou desde então.
+Ask only unanswered, decision-relevant questions; in revision mode, ask only what changed. **Do not draft** a marketing section until the **user answers** these questions.
 
-### 2. Redigir a seção (dado o Q&A)
+- Who is the initial ICP, including segment, size, context, and exclusions?
+- Which alternatives does that ICP use today, including doing nothing?
+- What promise or position would make this meaningfully preferable?
+- Which acquisition channels fit current budget, time, and access?
+- What demand-validation signal exists, and which acquisition metric governs the next test?
 
-Formato da seção redigida:
+## Phase 3: Identify material research gaps
+
+List **Material research gaps** only when a verifiable unknown could materially change ICP, alternatives, positioning, channel choice, or demand signal. For each, ask `business-research` for `mode: targeted` research with the question, decision impact, known Evidence IDs, and the result that would resolve it. Do not research user preferences, user decisions, or low-impact unknowns.
+
+## Phase 4: Draft the department section
+
+Draft only after answers are available and requested research returned or was consciously deferred. Preserve this distinction:
 
 ```markdown
-### Seção redigida
-**ICP:** ...
-**Posicionamento:** ...
-**Canais priorizados:** ...
-**Validação já feita / a fazer:** ...
-**Métricas a acompanhar:** ...
+### Marketing
+**Decisions:** user choices on ICP, positioning, and channel priority.
+**Evidence-backed facts:** statements supported by distilled evidence.
+**Estimates and assumptions:** channel performance or acquisition-cost assumptions with their basis.
+**Unvalidated hypotheses:** messages, audiences, and channels still needing a test.
+**Conflicts:** contradictory evidence or answers and their consequence.
+**Evidence IDs:** IDs supporting the facts above.
+**Validation actions:** demand tests, owners, metrics, and thresholds.
 ```
 
-Baseie-se só no que o usuário respondeu — não complete lacunas com suposições. Se uma resposta ficar vaga demais para virar seção, isso é sinal de que a pergunta precisa ser refeita, não de preencher com uma suposição sua.
+## Revision mode
 
-## Uso isolado
+Compare new answers and evidence to the existing section. Preserve still-valid Decisions, ask only necessary follow-ups, mark superseded Evidence IDs, and surface Conflicts rather than silently overwriting them.
 
-Quando invocada fora do fluxo de `business-direction` (sem `state.md`), responda só no chat: pergunte, receba resposta, gere a seção — sem persistir nada em disco.
+## Standalone mode
 
-## Erros comuns
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
 
-| Erro | Por quê é errado |
-|---|---|
-| Definir ICP amplo demais ("qualquer empresa que precise de X") | Não é acionável para escolher canal nem mensagem |
-| Assumir canal pago como ponto de partida | Costuma ter CAC alto antes de a mensagem estar validada; pergunte antes de recomendar |
-| Confundir posicionamento com lista de funcionalidades | Posicionamento é sobre por que escolher isso, não sobre o que o produto faz |
+## Common mistakes
+
+- Drafting positioning before the user identifies the initial ICP and alternatives.
+- Presenting an assumed CAC or channel conversion rate as an Evidence-backed fact.
+- Asking `business-research` to choose positioning rather than research a material verifiable gap.
+- Treating a feature list as a positioning claim.

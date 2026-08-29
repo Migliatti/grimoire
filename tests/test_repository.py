@@ -78,6 +78,44 @@ class SkillContractTests(unittest.TestCase):
         ):
             self.assertIn(required, text)
 
+    def test_department_skills_share_the_evidence_protocol(self) -> None:
+        names = (
+            "product-scope",
+            "market-positioning",
+            "sales-pipeline",
+            "financial-planning",
+            "operations-planning",
+        )
+        for name in names:
+            with self.subTest(skill=name):
+                text = self.read_skill(name)
+                for required in (
+                    "user's language",
+                    "Evidence available",
+                    "Material research gaps",
+                    "mode: targeted",
+                    "Decisions",
+                    "Evidence-backed facts",
+                    "Estimates and assumptions",
+                    "Unvalidated hypotheses",
+                    "Evidence IDs",
+                    "Validation actions",
+                    "Standalone mode",
+                ):
+                    self.assertIn(required, text)
+
+    def test_department_skills_do_not_draft_before_answers(self) -> None:
+        for name in (
+            "product-scope",
+            "market-positioning",
+            "sales-pipeline",
+            "financial-planning",
+            "operations-planning",
+        ):
+            text = self.read_skill(name)
+            self.assertIn("Do not draft", text)
+            self.assertIn("user answers", text)
+
 
 if __name__ == "__main__":
     unittest.main()

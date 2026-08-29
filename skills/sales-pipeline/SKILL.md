@@ -1,50 +1,60 @@
 ---
 name: sales-pipeline
-description: Use when pensando o departamento de Vendas de uma direção de negócio — modelo de venda, funil, objeções e precificação percebida pelo cliente. Dispara junto com `business-direction`, ou isoladamente quando o usuário pede "pensa as vendas dessa ideia" sem querer o fluxo completo.
+description: Use when defining a sales department section for a business direction, including the initial seller, buyer process, funnel, objections, entry offer, and willingness-to-pay signals.
 ---
 
-# sales-pipeline
+# Sales pipeline
 
-## Overview
+## Role and boundary
 
-Gera as perguntas de Vendas para uma direção de negócio, e transforma as respostas em uma seção estruturada: modelo de venda, funil, objeções e argumento de valor. Nunca escreve a seção sem antes ter as respostas — se chamado sem respostas, devolve só as perguntas.
+Turn a business direction into a sales section. Consume the direction, prior Q&A when revising, distilled evidence entries, open gaps, and the persistent or standalone mode. Reply in the user's language.
 
-## Duas responsabilidades
+`business-research` owns evidence acquisition and the evidence registry. This skill does not browse, invent citations, make strategy decisions for the user, or persist research.
 
-### 1. Gerar perguntas (dado o contexto da direção)
+## Phase 1: Review available evidence
 
-Perguntas centrais de Vendas — adapte à direção, mas cubra pelo menos:
+Read the direction and prior answers. Start with **Evidence available**: evidence IDs and supported facts, then unresolved or conflicting evidence. Evidence supports decisions; it does not make them.
 
-- Quem vende no início (o próprio fundador, uma equipe, um canal/parceiro)?
-- Como é o ciclo de decisão do cliente: decisor único ou múltiplos aprovadores, ciclo curto ou longo?
-- Que etapas o funil precisa ter (prospecção → demo/piloto → conversão → expansão), e onde a maior fricção é esperada?
-- Quais objeções o cliente provavelmente vai levantar, e o que responde a cada uma?
-- Existe intenção de oferecer piloto/teste gratuito, e por quanto tempo?
+## Phase 2: Ask informed questions
 
-Se estiver em uma revisão (Q&A anterior existe), não repita perguntas já respondidas — pergunte só o que mudou desde então.
+Ask only unanswered, decision-relevant questions; in revision mode, ask only what changed. **Do not draft** a sales section until the **user answers** these questions.
 
-### 2. Redigir a seção (dado o Q&A)
+- Who is the initial seller, and what access do they have to likely buyers?
+- Who decides, influences, pays, and approves, and how does the decision process work?
+- What are the minimum funnel stages and likely friction at each stage?
+- Which objections are expected, and what evidence or offer could answer each one?
+- What is the entry offer, and which willingness-to-pay signals would validate it?
 
-Formato da seção redigida:
+## Phase 3: Identify material research gaps
+
+List **Material research gaps** only when a verifiable unknown could materially change buyer process, funnel, objection handling, entry offer, or willingness-to-pay signal. For each, ask `business-research` for `mode: targeted` research with the question, decision impact, known Evidence IDs, and the result that would resolve it. Do not research user preferences, user decisions, or low-impact unknowns.
+
+## Phase 4: Draft the department section
+
+Draft only after answers are available and requested research returned or was consciously deferred. Preserve this distinction:
 
 ```markdown
-### Seção redigida
-**Modelo de venda:** ...
-**Funil:** ...
-**Objeções e respostas:** ...
-**Piloto/oferta de entrada:** ...
+### Sales
+**Decisions:** user choices on the seller, funnel, and entry offer.
+**Evidence-backed facts:** statements supported by distilled evidence.
+**Estimates and assumptions:** cycle length, conversion, or price assumptions with their basis.
+**Unvalidated hypotheses:** buyer behavior and willingness-to-pay beliefs still needing a test.
+**Conflicts:** contradictory evidence or answers and their consequence.
+**Evidence IDs:** IDs supporting the facts above.
+**Validation actions:** interviews, offers, and funnel measurements with thresholds.
 ```
 
-Baseie-se só no que o usuário respondeu — não complete lacunas com suposições. Se uma resposta ficar vaga demais para virar seção, isso é sinal de que a pergunta precisa ser refeita, não de preencher com uma suposição sua.
+## Revision mode
 
-## Uso isolado
+Compare new answers and evidence to the existing section. Preserve still-valid Decisions, ask only necessary follow-ups, mark superseded Evidence IDs, and surface Conflicts rather than silently overwriting them.
 
-Quando invocada fora do fluxo de `business-direction` (sem `state.md`), responda só no chat: pergunte, receba resposta, gere a seção — sem persistir nada em disco.
+## Standalone mode
 
-## Erros comuns
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
 
-| Erro | Por quê é errado |
-|---|---|
-| Assumir preço/pacote sem checar com o usuário se já existe uma direção de precificação | Precificação de fato é decisão financeira — aqui é só como isso é vendido/percebido, não o número final |
-| Listar objeções genéricas de SaaS em vez das específicas do público descrito | Reduz a utilidade prática da seção |
-| Pular a pergunta sobre quem vende no início | Muda completamente o funil recomendado (fundador vendendo é diferente de equipe comercial) |
+## Common mistakes
+
+- Drafting a funnel before the user identifies the seller and buyer process.
+- Treating an illustrative conversion rate as an Evidence-backed fact.
+- Asking `business-research` to choose the entry offer rather than research a material verifiable gap.
+- Confusing the revenue model with the sales motion.

@@ -1,50 +1,60 @@
 ---
 name: operations-planning
-description: Use when pensando o departamento de Operações de uma direção de negócio — onboarding de cliente, suporte, compliance/risco operacional e time mínimo necessário. Dispara junto com `business-direction`, ou isoladamente quando o usuário pede "pensa a operação dessa ideia" sem querer o fluxo completo.
+description: Use when defining an operations department section for a business direction, including onboarding, support, regulatory and operational risk, minimum team, failure points, and contingency.
 ---
 
-# operations-planning
+# Operations planning
 
-## Overview
+## Role and boundary
 
-Gera as perguntas de Operações para uma direção de negócio, e transforma as respostas em uma seção estruturada: onboarding, suporte, risco/compliance e time mínimo. Nunca escreve a seção sem antes ter as respostas — se chamado sem respostas, devolve só as perguntas.
+Turn a business direction into an operations section. Consume the direction, prior Q&A when revising, distilled evidence entries, open gaps, and the persistent or standalone mode. Reply in the user's language.
 
-## Duas responsabilidades
+`business-research` owns evidence acquisition and the evidence registry. This skill does not browse, invent citations, make strategy decisions for the user, or persist research.
 
-### 1. Gerar perguntas (dado o contexto da direção)
+## Phase 1: Review available evidence
 
-Perguntas centrais de Operações — adapte à direção, mas cubra pelo menos:
+Read the direction and prior answers. Start with **Evidence available**: evidence IDs and supported facts, then unresolved or conflicting evidence. Evidence supports decisions; it does not make them.
 
-- Como é o processo de onboarding de um novo cliente/usuário do zero até estar operando de fato?
-- Quem dá suporte no início, e por qual canal?
-- Existe alguma exigência regulatória, legal ou de compliance específica desse setor (dados sensíveis, licenças, normas)?
-- Qual é o time mínimo necessário para operar isso nos primeiros meses?
-- O que quebra o negócio operacionalmente se falhar (ponto único de falha), e existe plano de contingência?
+## Phase 2: Ask informed questions
 
-Se estiver em uma revisão (Q&A anterior existe), não repita perguntas já respondidas — pergunte só o que mudou desde então.
+Ask only unanswered, decision-relevant questions; in revision mode, ask only what changed. **Do not draft** an operations section until the **user answers** these questions.
 
-### 2. Redigir a seção (dado o Q&A)
+- How does a customer move from onboarding to reliable use?
+- Who provides support, through which channels, and with what response expectation?
+- Which regulatory, legal, privacy, or operational risks may apply?
+- What is the minimum team required to operate the first version?
+- What are the critical failure points, and what contingency makes each tolerable?
 
-Formato da seção redigida:
+## Phase 3: Identify material research gaps
+
+List **Material research gaps** only when a verifiable unknown could materially change onboarding, support, regulatory exposure, the minimum team, a failure point, or contingency. For each, ask `business-research` for `mode: targeted` research with the question, decision impact, known Evidence IDs, and the result that would resolve it. Do not research user preferences, user decisions, or low-impact unknowns.
+
+## Phase 4: Draft the department section
+
+Draft only after answers are available and requested research returned or was consciously deferred. Preserve this distinction:
 
 ```markdown
-### Seção redigida
-**Onboarding:** ...
-**Suporte:** ...
-**Compliance e risco operacional:** ...
-**Time mínimo viável:** ...
+### Operations
+**Decisions:** user choices on onboarding, support, team, and contingency.
+**Evidence-backed facts:** statements supported by distilled evidence.
+**Estimates and assumptions:** capacity, staffing, or response assumptions with their basis.
+**Unvalidated hypotheses:** operating practices and risks still needing validation.
+**Conflicts:** contradictory evidence or answers and their consequence.
+**Evidence IDs:** IDs supporting the facts above.
+**Validation actions:** operational tests, owners, and thresholds for unresolved risk.
 ```
 
-Baseie-se só no que o usuário respondeu — não complete lacunas com suposições. Se uma resposta ficar vaga demais para virar seção, isso é sinal de que a pergunta precisa ser refeita, não de preencher com uma suposição sua.
+## Revision mode
 
-## Uso isolado
+Compare new answers and evidence to the existing section. Preserve still-valid Decisions, ask only necessary follow-ups, mark superseded Evidence IDs, and surface Conflicts rather than silently overwriting them.
 
-Quando invocada fora do fluxo de `business-direction` (sem `state.md`), responda só no chat: pergunte, receba resposta, gere a seção — sem persistir nada em disco.
+## Standalone mode
 
-## Erros comuns
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
 
-| Erro | Por quê é errado |
-|---|---|
-| Pular a pergunta de compliance por achar que "não se aplica" | Setores regulados (saúde, financeiro, dados pessoais) têm risco real que muda o plano inteiro |
-| Assumir que o fundador cobre suporte indefinidamente sem perguntar | Vira gargalo não planejado ao crescer |
-| Confundir "time mínimo viável" com organograma completo de contratações futuras | O foco é só o necessário para operar agora, não o roadmap de RH |
+## Common mistakes
+
+- Drafting an operating model before the user identifies onboarding, support ownership, and risk context.
+- Presenting a staffing or support-capacity assumption as an Evidence-backed fact.
+- Asking `business-research` to decide a contingency choice rather than research a material verifiable gap.
+- Hiding regulatory or operational conflict rather than assigning a Validation action.

@@ -1,50 +1,60 @@
 ---
 name: financial-planning
-description: Use when pensando o departamento Financeiro de uma direção de negócio — modelo de receita, estrutura de custos e necessidade de capital. Dispara junto com `business-direction`, ou isoladamente quando o usuário pede "pensa o financeiro dessa ideia" sem querer o fluxo completo.
+description: Use when defining a finance department section for a business direction, including revenue model, unit economics, costs, capital, runway, and validation thresholds.
 ---
 
-# financial-planning
+# Financial planning
 
-## Overview
+## Role and boundary
 
-Gera as perguntas Financeiras para uma direção de negócio, e transforma as respostas em uma seção estruturada: modelo de receita, custos e capital. Nunca escreve a seção sem antes ter as respostas — se chamado sem respostas, devolve só as perguntas.
+Turn a business direction into a finance section. Consume the direction, prior Q&A when revising, distilled evidence entries, open gaps, and the persistent or standalone mode. Reply in the user's language.
 
-## Duas responsabilidades
+`business-research` owns evidence acquisition and the evidence registry. This skill does not browse, invent citations, make strategy decisions for the user, or persist research.
 
-### 1. Gerar perguntas (dado o contexto da direção)
+## Phase 1: Review available evidence
 
-Perguntas centrais Financeiras — adapte à direção, mas cubra pelo menos:
+Read the direction and prior answers. Start with **Evidence available**: evidence IDs and supported facts, then unresolved or conflicting evidence. Evidence supports decisions; it does not make them.
 
-- Qual modelo de receita faz sentido (assinatura, uso, comissão, venda única) e por quê?
-- Quais são os custos variáveis mais sensíveis (ex.: custo por unidade vendida/atendida) que crescem junto com o volume?
-- O negócio precisa de capital externo para começar, ou dá para bootstrapar a fase de validação?
-- Existe algum número real já conhecido (ticket médio do mercado, custo de um fornecedor específico), ou tudo ainda é estimativa?
-- Qual seria um resultado financeiro "bom o suficiente" nos primeiros 3-6 meses para considerar a direção validada?
+## Phase 2: Ask informed questions
 
-Se estiver em uma revisão (Q&A anterior existe), não repita perguntas já respondidas — pergunte só o que mudou desde então.
+Ask only unanswered, decision-relevant questions; in revision mode, ask only what changed. **Do not draft** a finance section until the **user answers** these questions.
 
-### 2. Redigir a seção (dado o Q&A)
+- What revenue model is intended, and why does it fit the customer value and sales motion?
+- Which unit-economics inputs, variable costs, and fixed costs are known or assumed?
+- What capital is available or required, and what constraints govern its use?
+- What runway matters for the validation period?
+- Which financial validation thresholds justify continuing, changing, or stopping?
 
-Formato da seção redigida:
+## Phase 3: Identify material research gaps
+
+List **Material research gaps** only when a verifiable unknown could materially change revenue model, unit economics, cost structure, capital need, runway, or threshold. For each, ask `business-research` for `mode: targeted` research with the question, decision impact, known Evidence IDs, and the result that would resolve it. Do not research user preferences, user decisions, or low-impact unknowns.
+
+## Phase 4: Draft the department section
+
+Draft only after answers are available and requested research returned or was consciously deferred. Preserve this distinction:
 
 ```markdown
-### Seção redigida
-**Modelo de receita:** ...
-**Estrutura de custos:** ...
-**Necessidade de capital:** ...
-**Critério de "validado" nos primeiros meses:** ...
+### Finance
+**Decisions:** user choices on revenue model, capital, and financial thresholds.
+**Evidence-backed facts:** statements supported by distilled evidence.
+**Estimates and assumptions:** unit economics, costs, and runway calculations with their basis.
+**Unvalidated hypotheses:** economic beliefs still needing a test.
+**Conflicts:** contradictory evidence or answers and their consequence.
+**Evidence IDs:** IDs supporting the facts above.
+**Validation actions:** measurements, owners, and thresholds for the next financial test.
 ```
 
-Baseie-se só no que o usuário respondeu — não complete lacunas com suposições. Números ilustrativos só quando o próprio usuário pedir uma projeção, e sempre marcados como ilustrativos, nunca como previsão real de mercado.
+## Revision mode
 
-## Uso isolado
+Compare new answers and evidence to the existing section. Preserve still-valid Decisions, ask only necessary follow-ups, mark superseded Evidence IDs, and surface Conflicts rather than silently overwriting them.
 
-Quando invocada fora do fluxo de `business-direction` (sem `state.md`), responda só no chat: pergunte, receba resposta, gere a seção — sem persistir nada em disco.
+## Standalone mode
 
-## Erros comuns
+**Standalone mode** keeps the exchange in chat: ask questions, assess evidence, request targeted research if needed, then draft after answers. Research and citations stay in the conversation; create no planning files.
 
-| Erro | Por quê é errado |
-|---|---|
-| Inventar uma tabela de projeção de MRR sem o usuário ter pedido nem fornecido premissas | Passa segurança falsa sobre números que ninguém validou |
-| Ignorar a pergunta sobre necessidade de capital | Muda o ritmo de todo o plano (bootstrapped vs. captação muda prioridades de outros departamentos) |
-| Tratar "modelo de receita" e "como isso é vendido" como a mesma coisa | Modelo de receita é estrutura (assinatura/uso/comissão); a venda em si é `sales-pipeline` |
+## Common mistakes
+
+- Drafting numbers before the user supplies a revenue choice and material constraints.
+- Presenting a runway calculation or market-price estimate as an Evidence-backed fact.
+- Asking `business-research` to decide a funding preference rather than research a material verifiable gap.
+- Confusing the revenue model with the sales process.
