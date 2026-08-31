@@ -38,6 +38,10 @@ These skills define a standalone mode or a focused contract that does not requir
 
 - [`web-design-psychology`](skills/web-design-psychology/SKILL.md) — raises the perceived quality and credibility of a page, and verifies it against measurable gates. Its [evidence base](skills/web-design-psychology/evidence-base.md) records what each cited study actually measured and which popular statistics it refuses to repeat.
 
+### Product engagement
+
+- [`gamification-psychology`](skills/gamification-psychology/SKILL.md) — designs points, badges, leaderboards, streaks, and progress systems that move the behavior the product exists to cause rather than the metric that counts it, and ships a kill criterion with every mechanic. Its [evidence base](skills/gamification-psychology/evidence-base.md) separates what the gamification literature actually measured from the statistics that circulate without a source.
+
 ### Business planning
 
 - [`business-research`](skills/business-research/SKILL.md) — gathers attributable evidence, confidence, conflicts, and material gaps.

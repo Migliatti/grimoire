@@ -1,7 +1,7 @@
 {
   "name": "grimoire",
-  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, covering evidence-backed business planning and perceived-quality web design.",
-  "version": "0.2.0",
+  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, covering evidence-backed business planning, perceived-quality web design, and engagement mechanics that produce real behavior.",
+  "version": "0.3.0",
   "author": {
     "name": "Gabriel Migliatti"
   },
@@ -15,6 +15,9 @@
     "strategy",
     "workflows",
     "web-design",
-    "ux"
+    "ux",
+    "gamification",
+    "engagement",
+    "retention"
   ]
 }

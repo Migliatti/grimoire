@@ -227,6 +227,69 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("Claims to refuse", evidence)
         self.assertIn("evidence-base.md", self.read_skill("web-design-psychology"))
 
+    def test_gamification_psychology_contract(self) -> None:
+        text = self.read_skill("gamification-psychology")
+        for required in (
+            "user's language",
+            "target behavior",
+            "worth zero",
+            "clawback",
+            "winnable",
+            "closable",
+            "repair path",
+            "coercion",
+            "randomness at the point of sale",
+            "can go down",
+            "holdout",
+            "kill criterion",
+            "Assumptions:",
+            "Trade-offs:",
+            "Standalone mode",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+
+    def test_gamification_psychology_separates_proxy_from_behavior(self) -> None:
+        text = self.read_skill("gamification-psychology")
+        self.assertIn("you are designing for the metric", text)
+        self.assertIn("away from the screen", text)
+
+    def test_gamification_psychology_refuses_known_bad_statistics(self) -> None:
+        text = self.read_skill("gamification-psychology")
+        for claim in (
+            "users with a 7-day streak are 3.6x more likely to be retained",
+            "gamification increases engagement by 48%",
+            "90% of employees are more productive with gamification",
+            "it takes 21 days to form a habit",
+        ):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, text)
+        self.assertIn("Never print these", text)
+        self.assertIn("No exceptions", text)
+
+    def test_gamification_psychology_refuses_invented_confidence(self) -> None:
+        text = self.read_skill("gamification-psychology")
+        self.assertIn("invented confidence rating", text)
+
+    def test_gamification_psychology_carries_an_evidence_base(self) -> None:
+        path = ROOT / "skills" / "gamification-psychology" / "evidence-base.md"
+        self.assertTrue(path.is_file())
+        evidence = path.read_text(encoding="utf-8")
+        for citation in (
+            "Deci",
+            "Mekler",
+            "Hanus",
+            "Hamari",
+            "Diefenbach",
+            "Kivetz",
+            "Nunes",
+            "Ghibellini",
+        ):
+            with self.subTest(citation=citation):
+                self.assertIn(citation, evidence)
+        self.assertIn("Claims to refuse", evidence)
+        self.assertIn("evidence-base.md", self.read_skill("gamification-psychology"))
+
 
 class RepositoryIntegrityTests(unittest.TestCase):
     def test_business_direction_manifest(self) -> None:
