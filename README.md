@@ -32,7 +32,13 @@ Canonical skill directories can also be inspected directly before installation. 
 
 ## Standalone skills
 
-These skills define a standalone mode or a focused contract that does not require running the complete chain:
+These skills define a standalone mode or a focused contract that does not require running the complete chain.
+
+### Design
+
+- [`web-design-psychology`](skills/web-design-psychology/SKILL.md) — raises the perceived quality and credibility of a page, and verifies it against measurable gates. Its [evidence base](skills/web-design-psychology/evidence-base.md) records what each cited study actually measured and which popular statistics it refuses to repeat.
+
+### Business planning
 
 - [`business-research`](skills/business-research/SKILL.md) — gathers attributable evidence, confidence, conflicts, and material gaps.
 - [`product-scope`](skills/product-scope/SKILL.md) — frames product scope after collecting decision-relevant answers.

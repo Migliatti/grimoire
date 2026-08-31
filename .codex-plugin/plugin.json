@@ -1,7 +1,7 @@
 {
   "name": "grimoire",
-  "version": "0.1.0",
-  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, starting with evidence-backed business planning.",
+  "version": "0.2.0",
+  "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, covering evidence-backed business planning and perceived-quality web design.",
   "author": {
     "name": "Gabriel Migliatti",
     "url": "https://github.com/Migliatti"
@@ -14,7 +14,9 @@
     "business-planning",
     "research",
     "strategy",
-    "workflows"
+    "workflows",
+    "web-design",
+    "ux"
   ],
   "skills": "./skills/",
   "interface": {

@@ -170,6 +170,63 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("Superseded draft:", text)
         self.assertIn("rather than overwriting it", text)
 
+    def test_web_design_psychology_contract(self) -> None:
+        text = self.read_skill("web-design-psychology")
+        for required in (
+            "user's language",
+            "prototypicality",
+            "without scroll and without interaction",
+            "trigger",
+            "rules",
+            "feedback",
+            "loops and modes",
+            "end of a task",
+            "prefers-reduced-motion",
+            "Verification gates",
+            "Assumptions:",
+            "Trade-offs:",
+            "Standalone mode",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+
+    def test_web_design_psychology_states_measurable_gates(self) -> None:
+        text = self.read_skill("web-design-psychology")
+        for threshold in ("2.5 s", "200 ms", "0.1", "4.5:1", "3:1"):
+            with self.subTest(threshold=threshold):
+                self.assertIn(threshold, text)
+
+    def test_web_design_psychology_refuses_known_bad_statistics(self) -> None:
+        text = self.read_skill("web-design-psychology")
+        for claim in (
+            "94% of first impressions are design-related",
+            "users decide whether to leave in 50 milliseconds",
+            "white space increases comprehension by 20%",
+            "users read only 20% of a page",
+        ):
+            with self.subTest(claim=claim):
+                self.assertIn(claim, text)
+        self.assertIn("Never print these", text)
+        self.assertIn("No exceptions", text)
+
+    def test_web_design_psychology_carries_an_evidence_base(self) -> None:
+        path = ROOT / "skills" / "web-design-psychology" / "evidence-base.md"
+        self.assertTrue(path.is_file())
+        evidence = path.read_text(encoding="utf-8")
+        for citation in (
+            "Lindgaard",
+            "Tuch",
+            "Reinecke",
+            "Fogg",
+            "Reber",
+            "Saffer",
+            "Kahneman",
+        ):
+            with self.subTest(citation=citation):
+                self.assertIn(citation, evidence)
+        self.assertIn("Claims to refuse", evidence)
+        self.assertIn("evidence-base.md", self.read_skill("web-design-psychology"))
+
 
 class RepositoryIntegrityTests(unittest.TestCase):
     def test_business_direction_manifest(self) -> None:
