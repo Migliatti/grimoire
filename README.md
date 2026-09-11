@@ -30,6 +30,47 @@ Canonical skill directories can also be inspected directly before installation. 
 
 [`business-direction`](chains/business-direction.md) is the first chain in the catalog. It coordinates evidence-backed business planning across relevant departments, preserves progress, and produces a final cross-department synthesis. Its manifest is the source of truth for the entrypoint, composition, flow, and persistence model.
 
+### How skills communicate
+
+Skills do not call one another freely. The `business-direction` entrypoint coordinates the chain, passes distilled context to each specialized skill, and persists their outputs in the planning state. `business-research` owns the shared evidence registry, while `strategy-synthesis` runs only after every relevant department has produced a current draft.
+
+```mermaid
+flowchart TD
+    U[User] <--> O[business-direction<br/>orchestrator]
+
+    O <--> S[(state.md<br/>questions, decisions, drafts, status)]
+    O -->|baseline or targeted question| R[business-research]
+    R -->|evidence IDs, confidence, gaps| E[(evidence index<br/>and department evidence)]
+    E -->|relevant evidence| O
+
+    subgraph D[Department skills run one at a time]
+        direction LR
+        P[1. product-scope]
+        M[2. market-positioning]
+        SA[3. sales-pipeline]
+        F[4. financial-planning]
+        OP[5. operations-planning]
+    end
+
+    O -->|context| P
+    P -->|questions or draft| O
+    O -->|context| M
+    M -->|questions or draft| O
+    O -->|context| SA
+    SA -->|questions or draft| O
+    O -->|context| F
+    F -->|questions or draft| O
+    O -->|context| OP
+    OP -->|questions or draft| O
+    O -->|all relevant departments drafted| SY[strategy-synthesis]
+    S -->|current department drafts| SY
+    E -->|referenced evidence and gaps| SY
+    SY -->|conflicts, assumptions,<br/>blockers and next steps| O
+    O -->|concise result| U
+```
+
+The orchestrator is therefore the communication hub: department skills exchange information through the distilled state and stable evidence IDs rather than through hidden peer-to-peer calls. If a material answer needs verification, control returns to `business-direction`, which requests targeted research and then resumes the active department.
+
 ## Standalone skills
 
 These skills define a standalone mode or a focused contract that does not require running the complete chain.
