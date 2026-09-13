@@ -1,6 +1,6 @@
 {
   "name": "grimoire",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, covering evidence-backed business planning, perceived-quality web design, and engagement mechanics that produce real behavior.",
   "author": {
     "name": "Gabriel Migliatti",
@@ -19,7 +19,9 @@
     "ux",
     "gamification",
     "engagement",
-    "retention"
+    "retention",
+    "skill-routing",
+    "skill-evaluation"
   ],
   "skills": "./skills/",
   "interface": {

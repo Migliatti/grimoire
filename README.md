@@ -21,7 +21,7 @@ To install by hand instead, or to install on another host:
 
 1. Clone or download this repository.
 2. Choose a [chain](#chains) for an end-to-end workflow or a [standalone skill](#standalone-skills) for a focused task.
-3. Follow the installation guide for a host whose skill discovery behavior is documented here: [Claude Code](docs/installation/claude-code.md) or [Codex](docs/installation/codex.md).
+3. Follow the installation guide for your host: [Claude Code](docs/installation/claude-code.md), [Codex](docs/installation/codex.md), [Pi](docs/installation/pi.md), or [Hermes Agent](docs/installation/hermes-agent.md).
 4. Invoke the installed entrypoint or skill using that host's documented interface.
 
 Canonical skill directories can also be inspected directly before installation. Treat every `skills/<skill-name>/SKILL.md` as the source to copy or link; do not edit a host-specific installed copy and then expect this repository to stay synchronized.
@@ -75,6 +75,11 @@ The orchestrator is therefore the communication hub: department skills exchange 
 
 These skills define a standalone mode or a focused contract that does not require running the complete chain.
 
+### Agent operations
+
+- [`route-context`](skills/route-context/SKILL.md) — selects the narrowest available skill for a request and records only actionable routing failures.
+- [`evolve-skills`](skills/evolve-skills/SKILL.md) — improves user-owned skills through explicit evaluations, approval, backups, and regression checks.
+
 ### Design
 
 - [`web-design-psychology`](skills/web-design-psychology/SKILL.md) — raises the perceived quality and credibility of a page, and verifies it against measurable gates. Its [evidence base](skills/web-design-psychology/evidence-base.md) records what each cited study actually measured and which popular statistics it refuses to repeat.
@@ -114,6 +119,8 @@ The canonical skill format is designed to stay host-neutral. The repository curr
 
 - [Claude Code installation](docs/installation/claude-code.md) — personal, project, or plugin scope
 - [Codex installation](docs/installation/codex.md) — repository, user, or admin scope
+- [Pi installation](docs/installation/pi.md) — personal, project, settings-path, or command-line scope
+- [Hermes Agent installation](docs/installation/hermes-agent.md) — personal copy, external directory, GitHub tap, or direct install
 
 These guides document discovery, not a claim that every skill behavior has been compatibility-tested on every interface or release. Review the relevant official documentation and the repository's behavioral results before relying on a workflow in a new environment.
 
