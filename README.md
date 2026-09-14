@@ -21,7 +21,7 @@ To install by hand instead, or to install on another host:
 
 1. Clone or download this repository.
 2. Choose a [chain](#chains) for an end-to-end workflow or a [standalone skill](#standalone-skills) for a focused task.
-3. Follow the installation guide for a host whose skill discovery behavior is documented here: [Claude Code](docs/installation/claude-code.md) or [Codex](docs/installation/codex.md).
+3. Follow the installation guide for a host whose skill discovery behavior is documented here: [Pi](docs/installation/pi.md), [Claude Code](docs/installation/claude-code.md), or [Codex](docs/installation/codex.md).
 4. Invoke the installed entrypoint or skill using that host's documented interface.
 
 Canonical skill directories can also be inspected directly before installation. Treat every `skills/<skill-name>/SKILL.md` as the source to copy or link; do not edit a host-specific installed copy and then expect this repository to stay synchronized.
@@ -75,6 +75,10 @@ The orchestrator is therefore the communication hub: department skills exchange 
 
 These skills define a standalone mode or a focused contract that does not require running the complete chain.
 
+### Agent operation
+
+- [`model-routing-policy`](skills/model-routing-policy/SKILL.md) — classifies task complexity, risk, and type; recommends an approved model profile and effort; and produces an auditable escalation or fallback decision when needed.
+
 ### Design
 
 - [`web-design-psychology`](skills/web-design-psychology/SKILL.md) — raises the perceived quality and credibility of a page, and verifies it against measurable gates. Its [evidence base](skills/web-design-psychology/evidence-base.md) records what each cited study actually measured and which popular statistics it refuses to repeat.
@@ -101,6 +105,8 @@ skills/<skill-name>/SKILL.md   Canonical skill instructions
 chains/<chain-name>.md         Chain composition and guide
 docs/authoring.md              Authoring and contribution rules
 docs/installation/             Verified host-specific guidance
+.pi/settings.json              Pi project skill-discovery configuration
+.pi/extensions/                Pi-specific output-validation integration
 tests/                         Contracts and behavioral evaluations
 .claude-plugin/                Claude Code plugin and marketplace manifests
 .codex-plugin/                 Codex plugin manifest
@@ -112,6 +118,7 @@ The packaging manifests declare metadata only. They point at the same canonical 
 
 The canonical skill format is designed to stay host-neutral. The repository currently documents discovery and installation only where current official sources establish the behavior:
 
+- [Pi installation](docs/installation/pi.md) — initial project-scoped discovery configuration
 - [Claude Code installation](docs/installation/claude-code.md) — personal, project, or plugin scope
 - [Codex installation](docs/installation/codex.md) — repository, user, or admin scope
 

@@ -1,0 +1,14 @@
+### Routing decision
+- Task type: external action
+- Complexity: high
+- Risk: high
+- Reversibility: irreversible
+- Evidence need: independent
+- Recommended model profile: advanced (subject to approved inventory)
+- Recommended effort: high
+- Manual preference: economy/minimal; does not meet the safety minimum
+- Decision: refuse automatic routing
+- Rationale: An irreversible production database migration is high-impact and requires defined approval, verification, rollback/containment planning, and an eligible profile. Economy/minimal cannot be automatically accepted.
+- Required approval or verification: Named production-change approval owner; migration plan; backup/restore validation; independent review; post-migration verification.
+- Safe fallback: Prepare a reversible migration draft and validation checklist without executing or routing the production change.
+- Audit record: Inputs: irreversible production database migration; requested economy/minimal; approval owner and approved-profile inventory unknown. Rules applied: high-risk irreversible external action without named approval owner; conflicting manual preference cannot lower the minimum.
