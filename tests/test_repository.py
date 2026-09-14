@@ -338,6 +338,7 @@ class RepositoryIntegrityTests(unittest.TestCase):
             "LICENSE",
             "chains/business-direction.md",
             "docs/authoring.md",
+            "docs/installation/pi.md",
             "docs/installation/claude-code.md",
             "docs/installation/codex.md",
             "docs/installation/pi.md",
@@ -384,6 +385,43 @@ class RepositoryIntegrityTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             for token in banned:
                 self.assertNotIn(token, text, f"{token} in {path}")
+
+    def test_model_routing_policy_contract(self) -> None:
+        text = (ROOT / "skills" / "model-routing-policy" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        for required in (
+            "economy",
+            "standard",
+            "advanced",
+            "specialist",
+            "Manual preference",
+            "Hard output gate",
+            "The entire response must begin with `### Routing decision`",
+            "Automatic routing is prohibited",
+            "medium, high, or restricted risk",
+            "Safe fallback",
+            "Audit record",
+            "the user's language",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+        self.assertTrue(
+            (ROOT / "skills" / "model-routing-policy" / "routing-record-template.md").is_file()
+        )
+        self.assertTrue((ROOT / "tests" / "model-routing-policy" / "scenarios.md").is_file())
+
+    def test_pi_project_settings_expose_canonical_skills(self) -> None:
+        settings = json.loads((ROOT / ".pi" / "settings.json").read_text(encoding="utf-8"))
+        self.assertEqual(settings["skills"], ["../skills"])
+
+    def test_pi_model_routing_output_gate_exists(self) -> None:
+        path = ROOT / ".pi" / "extensions" / "model-routing-output-gate.ts"
+        self.assertTrue(path.is_file())
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("model-routing-policy", text)
+        self.assertIn("agent_settled", text)
+        self.assertIn("sendUserMessage", text)
 
 
 class PackagingManifestTests(unittest.TestCase):

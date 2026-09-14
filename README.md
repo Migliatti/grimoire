@@ -79,6 +79,7 @@ These skills define a standalone mode or a focused contract that does not requir
 
 - [`route-context`](skills/route-context/SKILL.md) — selects the narrowest available skill for a request and records only actionable routing failures.
 - [`evolve-skills`](skills/evolve-skills/SKILL.md) — improves user-owned skills through explicit evaluations, approval, backups, and regression checks.
+- [`model-routing-policy`](skills/model-routing-policy/SKILL.md) — classifies task complexity, risk, and type; recommends an approved model profile and effort; and produces an auditable escalation or fallback decision when needed.
 
 ### Design
 
@@ -106,6 +107,8 @@ skills/<skill-name>/SKILL.md   Canonical skill instructions
 chains/<chain-name>.md         Chain composition and guide
 docs/authoring.md              Authoring and contribution rules
 docs/installation/             Verified host-specific guidance
+.pi/settings.json              Pi project skill-discovery configuration
+.pi/extensions/                Pi-specific output-validation integration
 tests/                         Contracts and behavioral evaluations
 .claude-plugin/                Claude Code plugin and marketplace manifests
 .codex-plugin/                 Codex plugin manifest
