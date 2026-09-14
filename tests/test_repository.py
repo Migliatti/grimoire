@@ -144,6 +144,36 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn("Do not draft", text)
             self.assertIn("user answers", text)
 
+    def test_route_context_contract(self) -> None:
+        text = self.read_skill("route-context")
+        for required in (
+            "user's language",
+            "available skill descriptions",
+            "narrowest skill",
+            "Do not invent",
+            "untrusted data",
+            "evolve-skills",
+            "explicit user approval",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+
+    def test_evolve_skills_contract(self) -> None:
+        text = self.read_skill("evolve-skills")
+        for required in (
+            "user's language",
+            "repeated and reproducible",
+            "baseline",
+            "explicit user approval",
+            "backup",
+            "regression",
+            "Restore",
+            "untrusted data",
+            "Never weaken",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+
     def test_strategy_synthesis_contract(self) -> None:
         text = self.read_skill("strategy-synthesis")
         for required in (
@@ -311,6 +341,8 @@ class RepositoryIntegrityTests(unittest.TestCase):
             "docs/installation/pi.md",
             "docs/installation/claude-code.md",
             "docs/installation/codex.md",
+            "docs/installation/pi.md",
+            "docs/installation/hermes-agent.md",
         ):
             self.assertTrue((ROOT / relative).is_file(), relative)
 
@@ -325,6 +357,27 @@ class RepositoryIntegrityTests(unittest.TestCase):
             text,
             r"Plugin skill: `/%s:business-direction`" % PLUGIN_NAME,
         )
+
+    def test_pi_guide_documents_settings_and_commands(self) -> None:
+        text = (ROOT / "docs" / "installation" / "pi.md").read_text(encoding="utf-8")
+        for required in (
+            '"skills"',
+            "~/.pi/agent/skills/",
+            "/skill:route-context",
+            '"enableSkillCommands": true',
+        ):
+            self.assertIn(required, text)
+
+    def test_hermes_guide_documents_safe_install_options(self) -> None:
+        text = (ROOT / "docs" / "installation" / "hermes-agent.md").read_text(encoding="utf-8")
+        for required in (
+            "~/.hermes/skills/",
+            "external_dirs",
+            "not write-protection boundaries",
+            "hermes skills tap add Migliatti/grimoire",
+            "hermes skills install Migliatti/grimoire/skills/route-context",
+        ):
+            self.assertIn(required, text)
 
     def test_canonical_skills_are_vendor_neutral(self) -> None:
         banned = ("~/.claude", ".codex/skills", "AskUserQuestion")
