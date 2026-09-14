@@ -83,7 +83,12 @@ These skills define a standalone mode or a focused contract that does not requir
 
 ### Design
 
+- [`project-design`](skills/project-design/SKILL.md) — turns a product idea into a decision-ready MVP design document with journeys, screens and states, rules, acceptance criteria, risks, and validation before implementation.
 - [`web-design-psychology`](skills/web-design-psychology/SKILL.md) — raises the perceived quality and credibility of a page, and verifies it against measurable gates. Its [evidence base](skills/web-design-psychology/evidence-base.md) records what each cited study actually measured and which popular statistics it refuses to repeat.
+
+### Project operations
+
+- [`github-issues`](skills/github-issues/SKILL.md) — drafts and organizes actionable GitHub issues from decided work, and creates them only after a complete preview and explicit approval.
 
 ### Product engagement
 

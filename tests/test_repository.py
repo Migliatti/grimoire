@@ -200,6 +200,74 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("Superseded draft:", text)
         self.assertIn("rather than overwriting it", text)
 
+    def test_project_design_contract(self) -> None:
+        text = self.read_skill("project-design")
+        for required in (
+            "user's language",
+            "product-scope",
+            "market-positioning",
+            "web-design-psychology",
+            "github-issues",
+            "objective questions",
+            "Value hypothesis",
+            "In scope",
+            "Out of scope",
+            "Primary journeys and flows",
+            "Empty:",
+            "Loading:",
+            "Error:",
+            "Success:",
+            "Business rules",
+            "Pending decisions",
+            "Given ..., when ..., then ...",
+            "Risks and dependencies",
+            "Initial success metrics",
+            "Next validation before code",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+        self.assertIn("never invent a requirement", text)
+        self.assertIn("Do not produce a complete design document", text)
+
+    def test_github_issues_contract(self) -> None:
+        text = self.read_skill("github-issues")
+        for required in (
+            "user's language",
+            "Draft issues mode",
+            "no remote side effects",
+            "Create issues on GitHub mode",
+            "explicit confirmation",
+            "target remote repository",
+            "authenticated GitHub client",
+            "issue templates",
+            "labels",
+            "milestones",
+            "projects",
+            "duplicate",
+            "complete Markdown body",
+            "full preview",
+            "gh",
+            "issue number, title, and URL",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+        self.assertIn("Never assume permissions", text)
+        self.assertIn("Do not call a mutating command", text)
+
+    def test_github_issues_preview_precedes_every_remote_mutation(self) -> None:
+        text = self.read_skill("github-issues")
+        preview = text.index("## Phase 4: full preview and confirmation gate")
+        creation = text.index("## Phase 5: create and record")
+        self.assertLess(preview, creation)
+        self.assertIn("Before every remote mutation", text[preview:creation])
+
+    def test_new_standalone_skills_are_cataloged_and_have_scenarios(self) -> None:
+        catalog = (ROOT / "README.md").read_text(encoding="utf-8")
+        for name in ("project-design", "github-issues"):
+            with self.subTest(skill=name):
+                self.assertIn(f"skills/{name}/SKILL.md", catalog)
+                self.assertTrue((ROOT / "tests" / name / "scenarios.md").is_file())
+
     def test_web_design_psychology_contract(self) -> None:
         text = self.read_skill("web-design-psychology")
         for required in (
