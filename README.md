@@ -105,6 +105,10 @@ These skills define a standalone mode or a focused contract that does not requir
 
 The orchestration entrypoint and final synthesis skill are documented through the chain manifest rather than presented as independent workflows.
 
+## Local video runtime
+
+[`video-runtime`](video-runtime/README.md) is the first local video-production slice: import audio with supplied timing, review a frame-driven Remotion preview, and export a technically validated H.264/AAC MP4. It preserves the historical prototype and uses no paid provider calls. See its guide for setup, human review commands, licensing, and current validation limits.
+
 ## Repository structure
 
 ```text
