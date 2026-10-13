@@ -1,6 +1,6 @@
 # Local video production
 
-The local video workflow starts with the canonical [`video-brief`](../skills/video-brief/SKILL.md) skill and continues through this Remotion runtime. It imports a structured, versioned briefing, records review against its exact digest, aligns storyboard scenes with supplied audio, and exports a local H.264/AAC MP4 at 1080×1920/30 fps. It remains separate from the historical `educational-video-kit` and makes no paid provider calls.
+The local video workflow starts with the canonical [`video-brief`](../skills/video-brief/SKILL.md) skill and continues through this Remotion runtime. It imports a structured, versioned briefing, records review against its exact digest, aligns storyboard scenes with supplied audio, and exports a local H.264/AAC MP4 at 1080×1920/30 fps. Paid narration is optional and separately authorized; existing local and imported-audio workflows need no credentials or provider calls. It remains separate from the historical `educational-video-kit`.
 
 ## Setup
 
@@ -21,7 +21,7 @@ Create an isolated run and save the JSON proposal produced by `video-brief`. The
 `--license free` declares your eligibility under Remotion's Free License; use `company` only with an existing applicable license. The runtime cannot verify license ownership. [Remotion terms](https://www.remotion.dev/docs/license/faq) were checked on 2026-10-12. Verify the license that applies to you before rendering.
 
 ```shell
-npm run video -- init runs/first --title "O universo tem um centro?" --purpose channel --language pt-BR --license free
+npm run video -- init runs/first --title "O universo tem um centro?" --purpose channel --language pt-BR --license free --target-duration 45
 npm run video -- import-briefing runs/first --briefing /path/to/briefing.json
 npm run video -- status runs/first
 npm run video -- review runs/first --target briefing --digest <briefing-digest> --decision approved --reviewer "Your name" --notes "Current script and direction reviewed"
@@ -29,9 +29,27 @@ npm run video -- review runs/first --target briefing --digest <briefing-digest> 
 
 The runtime validates schema, unique IDs, claim/source references, source consultation dates, clean narration records, scene-to-script references, source-backed numeric data points, supported movement styles, purpose, and language. Movement uses `hold`, `drift`, `zoom`, `orbit`, `pulse`, or `rise`, anchored to a narration segment in that scene. Import stores the original JSON under a relative content-addressed path in `input/` and records the proposal and artifact hash in `manifest.json`. `status` returns the current `reviewDigests.briefing`. Editing or replacing a proposal changes that digest and invalidates its prior approval. Only the human who actually reviewed the current content should record the decision; silence and automated protocol fixtures are not creative approval.
 
+## Optional ElevenLabs narration
+
+Voice preview and synthesis are paid operations. First approve the current briefing, then explicitly authorize a maximum number of provider request characters for this run. The narration budget is independent of the visual budget. Estimates and completed request characters are recorded separately in `manifest.json`; these character counts are not a currency quote. A timeout or malformed response after a synthesis request is marked as an uncertain charge and blocks more paid requests until the provider account is reconciled. The runtime never retries automatically.
+
+The runtime saves the character reservation before the charged request. If a process exits during that request, the next status/command recovers it as uncertain. After checking the provider account, reconcile the reservation explicitly with `npm run video -- reconcile-narration runs/first --outcome charged --confirm-reconciled yes` (or `--outcome not-charged`). A charged reconciliation records this runtime's request-character count after the operator confirms the account outcome; it does not represent provider credits or currency.
+
+Set `ELEVENLABS_API_KEY` in the process environment using your local secret manager. The runtime sends it only as the `xi-api-key` header and does not save it in run artifacts. Choose a voice and model from the provider account after reviewing their capabilities and terms:
+
+```shell
+npm run video -- authorize-narration runs/first --limit 1200 --confirm-paid yes
+npm run video -- voice-preview runs/first --segment line-001 --voice <voice-id> --model <model-id> --stability 0.5
+npm run video -- status runs/first
+npm run video -- review runs/first --target voice --digest <voice-digest> --decision approved --reviewer "Your name" --notes "Preview listened to; pronunciation and voice choice approved"
+npm run video -- synthesize-narration runs/first --voice <voice-id> --model <model-id> --audio-license "Terms and plan reviewed by operator"
+```
+
+The adapter checks current model text-to-speech/language/length capability and the voice's verified language metadata before sending text. A preview uses one narration segment; synthesis sends the clean script as one continuous contextual take with paragraph breaks, and must use the exact voice/model from a current human-approved preview. Optional pronunciation dictionaries use explicit `--pronunciation-dictionary <dictionary-id>:<version-id>[,<dictionary-id>:<version-id>...]` locators; voice settings are also supported. Character timings become the same caption/alignment records used by imported audio. Generated narration preserves the provider audio as the original and creates a measured 48 kHz PCM working copy. The manifest and technical report record provider, voice, model, timing provenance, operator-supplied license conditions, and that commercial-use eligibility is unverified. A human must listen to the preview/take, check timing and pronunciation, and independently confirm applicable license and commercial-use rights. Protocol tests use local doubles and do not demonstrate live provider success. Brazilian Portuguese voice selection, expressive quality, and live alignment remain unvalidated until an operator explicitly authorizes a real paid voice review.
+
 ## Import audio and render the storyboard
 
-Alignment must use the narration IDs and exact clean narration text from the imported proposal. Supply actual seconds within measured decoded audio duration. For media containers, the first audio stream (`0:a:0`) is decoded into the working WAV and measured; a longer video track does not extend valid audio timing. Alignment is checked against the actual file but is not independently forced-aligned; human audio review must check word timing.
+Alignment must use the narration IDs and clean narration text from the imported proposal. Supply actual seconds within measured decoded audio duration. The runtime normalizes Unicode and whitespace when checking spoken text. For media containers, the first audio stream (`0:a:0`) is decoded into the working WAV and measured; a longer video track does not extend valid audio timing. Alignment provenance is `supplied`: timestamps are validated against the actual audio, but this runtime does not independently force-align speech. Human audio review must check timing against the recording.
 
 ```json
 {
@@ -49,7 +67,7 @@ npm run video -- review runs/first --target audio --digest <audio-digest> --deci
 npm run video -- preview runs/first
 ```
 
-Watch `preview/video-r<revision>.mp4` with sound. Preview spans the imported recording. The renderer derives contiguous, half-open frame intervals from scene-to-narration references and measured alignment; it fills pauses with the adjacent scene and rejects missing, reordered, or unrenderable scene assignments. It renders the approved profile colors, scene templates, selected movement styles, transitions, and imported narration. Sound-plan cues remain planning notes; no voice/music/effect synthesis is implemented here.
+Watch `preview/video-r<revision>.mp4` with sound. Preview spans the imported recording. The renderer maps each supplied audio interval `[start, end)` to integer frames `[floor(start × fps), ceil(end × fps))`; scene starts use the same inclusive-start conversion, scene ends are exclusive, and a scene fills pauses until the next scene boundary. Captions use these same frame bounds and are burned into the video only while their aligned interval is active. Audio import also writes a separate WebVTT file at the path in `status.artifacts.captions` (`review/captions-r<revision>.vtt`). If measured speech exceeds `--target-duration`, `durationAssessment` and import progress warn and suggest shortening/restructuring the script or recording a new delivery; imported speech is never accelerated. It renders the approved profile colors, scene templates, selected movement styles, transitions, and imported narration. Sound-plan cues remain planning notes; no voice/music/effect synthesis is implemented here.
 
 After watching the preview, record the actual scene review and render:
 
@@ -84,4 +102,4 @@ Paths are relative and checked against escaping paths/symlinks. Moving a run pre
 
 ## Validation boundaries
 
-Routine integration tests use actual generated WAV tone files and actual Remotion/FFmpeg rendering, never a paid service. The tone is a media fixture, not evidence of expressive speech. Tests cover run creation, measured import, review gates, final codecs/dimensions/fps/duration/faststart, complete decoding, moved runs, deterministic out-of-order frames, corrupt audio, invalid timestamps/manifests, changed bytes, missing files, and unloadable fonts. Creative quality and narration-provider integration remain unvalidated.
+Routine integration tests use actual generated WAV media and actual Remotion/FFmpeg rendering, never a paid service. Tone fixtures exercise timing and caption rendering but are not evidence of expressive speech or human-verified word alignment. Tests cover run creation, measured import, supplied provenance, caption files and burn-in, duration-target warnings, review gates, final codecs/dimensions/fps/duration/faststart, complete decoding, moved runs, deterministic out-of-order frames, corrupt audio, invalid timestamps/manifests, changed bytes, missing files, and unloadable fonts. Creative quality and narration-provider integration remain unvalidated.

@@ -18,7 +18,26 @@ function tool(binary: string | null, args: string[]) {
 }
 type Probe = {format: {duration: string}; streams: {codec_type: string; codec_name: string; pix_fmt?: string; width?: number; height?: number; avg_frame_rate?: string}[]};
 function probe(path: string): Probe {return JSON.parse(tool(ffprobe, ['-v', 'error', '-show_format', '-show_streams', '-of', 'json', path]));}
+export function measureAudio(path: string) {
+  const media = probe(path);
+  if (!media.streams.some((stream) => stream.codec_type === 'audio')) throw new Error('Generated media has no audio stream');
+  const duration = Number(media.format.duration);
+  if (!Number.isFinite(duration) || duration <= 0) throw new Error('Generated audio duration could not be measured');
+  return duration;
+}
 function decode(path: string) {tool(ffmpeg, ['-v', 'error', '-xerror', '-i', path, '-f', 'null', '-']);}
+// Assign a boundary to the first frame sampled at or after its timestamp.
+function secondsToBoundaryFrame(seconds: number, fps: number) {return Math.ceil(seconds * fps);}
+function vttTime(seconds: number) {
+  const milliseconds = Math.round(seconds * 1000);
+  const hours = Math.floor(milliseconds / 3_600_000);
+  const minutes = Math.floor(milliseconds / 60_000) % 60;
+  const wholeSeconds = Math.floor(milliseconds / 1000) % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(wholeSeconds).padStart(2, '0')}.${String(milliseconds % 1000).padStart(3, '0')}`;
+}
+function captionFile(alignment: NonNullable<Manifest['audio']>['alignment']) {
+  return `WEBVTT\n\n${alignment.segments.map((segment, index) => `${index + 1}\n${vttTime(segment.start)} --> ${vttTime(segment.end)}\n${segment.text.normalize('NFC').trim().replace(/\s+/gu, ' ')}\n`).join('\n')}`;
+}
 export async function importAudio(root: string, m: Manifest, options: Record<string, string | undefined>) {
   if (!options.audio || !options.alignment || !options.origin || !options['audio-license']) throw new Error('Audio, supplied alignment, origin and audio-license required');
   const rights = rightsSchema.parse({origin: options.origin, license: options['audio-license'], attribution: options.attribution ?? ''});
@@ -42,14 +61,27 @@ export async function importAudio(root: string, m: Manifest, options: Record<str
     // Retain an already approved identical working file rather than overwriting it.
     if (!existsSync(destination)) renameSync(temporary, destination);
     else if (artifactOfExternal(destination) !== workingHash) throw new Error('Existing working audio does not match its content hash');
-    m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment, rights};
+    m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment, rights, synthesis: null};
     m.scene.endFrame = Math.ceil(duration * m.format.fps);
-    m.artifacts = {preview: null, final: null, report: null};
+    m.durationAssessment = m.durationTargetSeconds === null ? null : {
+      targetSeconds: m.durationTargetSeconds,
+      measuredSeconds: duration,
+      status: duration > m.durationTargetSeconds ? 'over_target' : 'within_target',
+      recommendation: duration > m.durationTargetSeconds ? 'Shorten or restructure the script, or record a new delivery; imported speech was not accelerated.' : null,
+    };
+    m.artifacts = {preview: null, final: null, report: null, captions: null, voicePreview: m.artifacts.voicePreview};
     m.previewSourceHash = null;
+    const captionsPath = `review/captions-r${m.revision}.vtt`;
+    writeFileSync(safePath(root, captionsPath), captionFile(alignment), {flag: 'wx'});
+    m.artifacts.captions = artifact(root, captionsPath, 'captions');
   } finally {
     if (existsSync(temporary)) unlinkSync(temporary);
   }
-  progress(root, m, 'import-audio', 'awaiting_review', 'Audio preserved and measured; supplied alignment validated, not independently forced-aligned');
+  const assessment = m.durationAssessment;
+  const durationNote = assessment?.status === 'over_target'
+    ? ` Measured narration ${assessment.measuredSeconds.toFixed(2)}s exceeds the ${assessment.targetSeconds.toFixed(2)}s target. ${assessment.recommendation}`
+    : assessment ? ` Measured narration ${assessment.measuredSeconds.toFixed(2)}s is within the ${assessment.targetSeconds.toFixed(2)}s target.` : '';
+  progress(root, m, 'import-audio', 'awaiting_review', `Audio preserved and measured; supplied alignment validated, not independently forced-aligned.${durationNote}`);
 }
 function artifactOfExternal(path: string) {return createHash('sha256').update(readFileSync(path)).digest('hex');}
 
@@ -71,7 +103,7 @@ async function composition(root: string, m: Manifest) {
   const boundaryFrames = proposal.storyboard.slice(1).map((scene) => {
     const aligned = alignmentById.get(scene.narrationSegmentIds[0]!);
     if (!aligned) throw new Error(`Storyboard references missing aligned narration: ${scene.narrationSegmentIds[0]}`);
-    return Math.round(aligned.segment.start * m.format.fps);
+    return secondsToBoundaryFrame(aligned.segment.start, m.format.fps);
   });
   const storyboard = proposal.storyboard.map((scene, index) => {
     const startFrame = index === 0 ? 0 : boundaryFrames[index - 1]!;
@@ -79,7 +111,12 @@ async function composition(root: string, m: Manifest) {
     if (endFrame <= startFrame) throw new Error(`Storyboard scene has no renderable frames: ${scene.id}`);
     return {...scene, startFrame, endFrame};
   });
-  const inputProps = {scene: m.scene, storyboard, profile: proposal.profile, purpose: proposal.purpose, language: proposal.language, durationInFrames: m.scene.endFrame, resources: names};
+  const captions = m.audio.alignment.segments.map((segment) => ({
+    text: segment.text.normalize('NFC').trim().replace(/\s+/gu, ' '),
+    startFrame: secondsToBoundaryFrame(segment.start, m.format.fps),
+    endFrame: Math.min(m.scene.endFrame, secondsToBoundaryFrame(segment.end, m.format.fps)),
+  }));
+  const inputProps = {scene: m.scene, storyboard, captions, profile: proposal.profile, purpose: proposal.purpose, language: proposal.language, durationInFrames: m.scene.endFrame, resources: names};
   const selected = await selectComposition({serveUrl, id: 'LocalScene', inputProps, timeoutInMilliseconds: 30_000});
   return {serveUrl, inputProps, composition: selected, timeoutInMilliseconds: 30_000};
 }
@@ -128,9 +165,10 @@ export async function validate(root: string, m: Manifest) {
   decode(path);
   const report = {schemaVersion: 1, runId: m.id, revision: m.revision, video: m.artifacts.final, measured, checks: {...checks, fullDecode: true},
     technicalPass: Object.values(checks).every(Boolean), creativeAcceptance: 'Not inferred from technical checks; see recorded human reviews',
-    alignment: 'Supplied timing validated against measured audio; speech synchronization requires human review',
-    costs: m.budgets, licenses: {remotion: {version: '4.0.535', declaredEligibility: m.remotionLicense, source: 'https://www.remotion.dev/docs/license/faq', checkedOn: '2026-10-12'}, audio: m.audio.rights, assets: m.assetRights},
-    untested: ['Loudness/true peak targets', 'Caption synchronization', 'Mobile legibility', 'Final human audio/creative review']};
+    alignment: m.audio.alignment.provenance === 'supplied' ? 'Supplied timing validated against measured audio; speech synchronization requires human review' : 'Provider character timing mapped to the shared caption alignment contract and validated against measured audio; speech synchronization requires human review',
+    costs: m.budgets, licenses: {remotion: {version: '4.0.535', declaredEligibility: m.remotionLicense, source: 'https://www.remotion.dev/docs/license/faq', checkedOn: '2026-10-12'}, audio: m.audio.rights, narrationProvider: m.audio.synthesis, assets: m.assetRights},
+    captions: m.artifacts.captions,
+    untested: ['Loudness/true peak targets', 'Mobile legibility', 'Final human audio/creative review']};
   const reportPath = `review/technical-report-r${m.revision}.json`;
   writeFileSync(safePath(root, reportPath), JSON.stringify(report, null, 2) + '\n');
   m.artifacts.report = artifact(root, reportPath, 'technical-report');

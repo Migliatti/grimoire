@@ -4,6 +4,7 @@ import {mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {execute} from '../src/production';
 
 const cli = (args: string[]) => spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', ...args], {encoding: 'utf8'});
 const json = (result: ReturnType<typeof cli>) => {
@@ -19,11 +20,96 @@ test('public invocation creates a versioned, portable run without paid services'
     assert.equal(result.revision, 1);
     assert.equal(result.status, 'pending');
     assert.equal(result.budgets.narration.limit, 0);
+    assert.equal(result.budgets.narration.estimated, 0);
     assert.equal(result.budgets.visuals.paidEnabled, false);
     assert.ok(result.id);
     assert.equal(JSON.parse(readFileSync(join(root, 'run/manifest.json'), 'utf8')).id, result.id);
     assert.notEqual(cli(['init', join(root, 'run'), '--title', 'overwrite', '--license', 'free']).status, 0);
   } finally {rmSync(root, {recursive: true, force: true});}
+});
+
+test('paid narration needs explicit per-run authorization and blocks requests above its separate character cap', () => {
+  const f = fixture();
+  try {
+    approve(f.run, 'briefing');
+    const args = ['synthesize-narration', f.run, '--voice', 'voice-br', '--model', 'eleven_multilingual_v2', '--audio-license', 'Pending human license review'];
+    const unauthorized = cli(args);
+    assert.notEqual(unauthorized.status, 0);
+    assert.match(unauthorized.stderr, /Paid narration is not authorized/i);
+    assert.notEqual(cli(['authorize-narration', f.run, '--limit', '80']).status, 0);
+    const authorized = json(cli(['authorize-narration', f.run, '--limit', '10', '--confirm-paid', 'yes']));
+    assert.equal(authorized.budgets.narration.paidEnabled, true);
+    assert.equal(authorized.budgets.narration.limit, 10);
+    assert.equal(authorized.budgets.visuals.paidEnabled, false);
+    const overLimit = cli(args);
+    assert.notEqual(overLimit.status, 0);
+    assert.match(overLimit.stderr, /exceeds the authorized limit/i);
+    const status = json(cli(['status', f.run]));
+    assert.equal(status.budgets.narration.actual, 0);
+    assert.equal(status.budgets.narration.estimated, 0);
+    json(cli(['authorize-narration', f.run, '--limit', '1000', '--confirm-paid', 'yes']));
+    const missingVoiceReview = cli(args);
+    assert.notEqual(missingVoiceReview.status, 0);
+    assert.match(missingVoiceReview.stderr, /Generate and listen to a paid voice preview first/i);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('public execute workflow injects a provider double and persists a character reservation before its charged request', async () => {
+  const f = fixture();
+  try {
+    approve(f.run, 'briefing');
+    await execute('authorize-narration', f.run, {limit: '2000', 'confirm-paid': 'yes'});
+    let persistedReservation = false;
+    let priorActual = 0;
+    const provider = {synthesize: async (input: {voiceId: string; modelId: string; text: string}, beforeChargedRequest: () => Promise<void>) => {
+      await beforeChargedRequest();
+      const manifest = JSON.parse(readFileSync(join(f.run, 'manifest.json'), 'utf8'));
+      assert.equal(manifest.budgets.narration.inFlight, true);
+      assert.equal(manifest.budgets.narration.pendingCharacters, [...input.text].length);
+      assert.equal(manifest.budgets.narration.actual, priorActual);
+      persistedReservation = true;
+      const characters = [...input.text];
+      return {audioBase64: readFileSync(f.audio).toString('base64'), alignment: {characters, character_start_times_seconds: characters.map((_, i) => i * 0.005), character_end_times_seconds: characters.map((_, i) => (i + 1) * 0.005)}, modelId: input.modelId, voiceId: input.voiceId, characterCount: characters.length, licenseConditions: 'Protocol double; terms not reviewed'};
+    }};
+    await execute('voice-preview', f.run, {segment: 'line-001', voice: 'voice-br', model: 'fixture-model'}, {createNarrationProvider: () => provider});
+    assert.equal(persistedReservation, true);
+    const preview = json(cli(['status', f.run]));
+    assert.equal(preview.budgets.narration.inFlight, false);
+    assert.equal(preview.budgets.narration.actual, [...simpleBriefingFixture().narration[0].text].length);
+    assert.ok(preview.artifacts.voicePreview.duration > 0);
+    priorActual = preview.budgets.narration.actual;
+    approve(f.run, 'voice');
+    await execute('synthesize-narration', f.run, {'audio-license': 'Operator review pending', voice: 'voice-br', model: 'fixture-model'}, {createNarrationProvider: () => provider});
+    const completed = json(cli(['status', f.run]));
+    assert.equal(completed.audio.synthesis.provider, 'elevenlabs');
+    assert.equal(completed.audio.synthesis.commercialUse, 'unverified');
+    assert.equal(completed.audio.alignment.provenance, 'elevenlabs-character-timings');
+    assert.deepEqual(readFileSync(join(f.run, completed.audio.original.path)), readFileSync(f.audio));
+    assert.ok(existsSync(join(f.run, completed.audio.working.path)));
+    assert.ok(completed.artifacts.captions);
+    assert.equal(completed.budgets.narration.uncertain, false);
+    assert.equal(completed.budgets.narration.inFlight, false);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('interrupted paid reservations recover as uncertain and require explicit account reconciliation', () => {
+  const f = fixture();
+  try {
+    const manifestPath = join(f.run, 'manifest.json');
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    manifest.budgets.narration = {paidEnabled: true, limit: 500, estimated: 30, actual: 0, uncertain: false, inFlight: true, pendingCharacters: 30};
+    writeFileSync(manifestPath, JSON.stringify(manifest));
+    const recovered = json(cli(['status', f.run]));
+    assert.equal(recovered.budgets.narration.uncertain, true);
+    assert.equal(recovered.budgets.narration.inFlight, false);
+    assert.equal(recovered.budgets.narration.estimated, 30);
+    assert.notEqual(cli(['authorize-narration', f.run, '--limit', '500', '--confirm-paid', 'yes']).status, 0);
+    json(cli(['reconcile-narration', f.run, '--outcome', 'not-charged', '--confirm-reconciled', 'yes']));
+    const reconciled = json(cli(['status', f.run]));
+    assert.equal(reconciled.budgets.narration.uncertain, false);
+    assert.equal(reconciled.budgets.narration.estimated, 0);
+    assert.equal(reconciled.budgets.narration.pendingCharacters, 0);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
 });
 
 import ffmpeg from 'ffmpeg-static';
@@ -67,10 +153,10 @@ function simpleBriefingFixture() {
   };
 }
 
-function fixture() {
+function fixture(targetDuration?: string) {
   const root = mkdtempSync(join(tmpdir(), 'grimoire-media-'));
   const run = join(root, 'run');
-  json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free']));
+  json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free', ...(targetDuration ? ['--target-duration', targetDuration] : [])]));
   const briefing = join(root, 'briefing.json');
   writeFileSync(briefing, JSON.stringify(simpleBriefingFixture()));
   json(cli(['import-briefing', run, '--briefing', briefing]));
@@ -202,11 +288,12 @@ test('briefing approval becomes stale after the proposal changes and legacy runs
 });
 
 test('replacing narration clears incompatible imported audio and its derived artifacts', () => {
-  const f = fixture();
+  const f = fixture('0.5');
   try {
     const importedAudio = json(cli(importArgs(f)));
     approve(f.run, 'audio');
     assert.ok(importedAudio.audio);
+    assert.equal(importedAudio.durationAssessment.status, 'over_target');
     const proposal = simpleBriefingFixture() as any;
     proposal.narration[0].text = 'Revised clean narration for a new recording';
     writeFileSync(f.briefing, JSON.stringify(proposal));
@@ -215,10 +302,27 @@ test('replacing narration clears incompatible imported audio and its derived art
     const status = json(cli(['status', f.run]));
     assert.equal(status.briefing.proposal.narration[0].text, proposal.narration[0].text);
     assert.equal(status.audio, null);
+    assert.equal(status.durationAssessment, null);
     assert.equal(status.artifacts.preview, null);
     assert.equal(status.artifacts.final, null);
     assert.equal(status.artifacts.report, null);
     assert.equal(status.status, 'awaiting_review');
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('re-importing a briefing with unchanged narration preserves its captions', () => {
+  const f = fixture();
+  try {
+    const imported = json(cli(importArgs(f)));
+    const captionsArtifact = imported.artifacts.captions;
+    assert.ok(captionsArtifact);
+    const proposal = simpleBriefingFixture() as any;
+    proposal.storyboard[0].composition.headline = 'Updated visual direction';
+    writeFileSync(f.briefing, JSON.stringify(proposal));
+    const reimported = json(cli(['import-briefing', f.run, '--briefing', f.briefing]));
+    assert.ok(reimported.audio, 'unchanged narration keeps its imported audio');
+    assert.deepEqual(reimported.artifacts.captions, captionsArtifact);
+    assert.match(readFileSync(join(f.run, reimported.artifacts.captions.path), 'utf8'), /Test fixture tone, not speech/);
   } finally {rmSync(f.root, {recursive: true, force: true});}
 });
 
@@ -280,15 +384,24 @@ test('public workflow renders an approved multi-scene briefing against imported 
   try {
     const run = join(root, 'run');
     json(cli(['init', run, '--title', 'O universo tem um centro?', '--license', 'free']));
-    const briefing = join(root, 'briefing.json'); writeFileSync(briefing, JSON.stringify(briefingFixture()));
+    const proposal = briefingFixture();
+    proposal.storyboard.forEach((scene, index) => {
+      scene.movement.style = 'hold';
+      scene.transition.type = 'cut';
+      Object.assign(scene.composition, {
+        template: 'data',
+        data: [{id: `point-${index + 1}`, label: scene.purpose, value: index + 1, unit: 'x', sourceIds: ['source-001']}],
+      });
+    });
+    const briefing = join(root, 'briefing.json'); writeFileSync(briefing, JSON.stringify(proposal));
     json(cli(['import-briefing', run, '--briefing', briefing]));
     const audio = join(root, 'voice.wav');
     const generated = spawnSync(ffmpeg!, ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-ar', '48000', audio], {encoding: 'utf8'});
     assert.equal(generated.status, 0, generated.stderr);
     const alignment = join(root, 'alignment.json');
     writeFileSync(alignment, JSON.stringify({provenance: 'supplied', segments: [
-      {id: 'line-001', text: briefingFixture().narration[0]!.text, start: 0, end: 0.4},
-      {id: 'line-002', text: briefingFixture().narration[1]!.text, start: 0.4, end: 1},
+      {id: 'line-001', text: briefingFixture().narration[0]!.text, start: 0, end: 0.14},
+      {id: 'line-002', text: briefingFixture().narration[1]!.text, start: 0.14, end: 1},
     ]}));
     const args = ['import-audio', run, '--audio', audio, '--alignment', alignment, '--origin', 'Locally generated test tone', '--audio-license', 'CC0'];
     const imported = json(cli(args));
@@ -304,14 +417,16 @@ test('public workflow renders an approved multi-scene briefing against imported 
     }
     const result = JSON.parse(rendered.stdout);
     assert.equal(result.status, 'validated');
-    json(cli(['frame', run, '--frame', '5', '--output', 'review/story-first.png']));
-    json(cli(['frame', run, '--frame', '20', '--output', 'review/story-second.png']));
+    for (const frame of [2, 4, 5, 20]) json(cli(['frame', run, '--frame', String(frame), '--output', `review/story-frame-${frame}.png`]));
     const pixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 1080 * 1920 * 4}).stdout;
-    assert.notDeepEqual(pixels('review/story-first.png'), pixels('review/story-second.png'));
+    const artworkPixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-vf', 'crop=900:470:90:260', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 470 * 3}).stdout;
+    assert.deepEqual(pixels('review/story-frame-2.png'), pixels('review/story-frame-4.png'), 'frame before the rounded boundary keeps the first scene and caption');
+    assert.deepEqual(pixels('review/story-frame-5.png'), pixels('review/story-frame-20.png'), 'frame at the rounded boundary switches to the second scene and caption');
+    assert.notDeepEqual(artworkPixels('review/story-frame-4.png'), artworkPixels('review/story-frame-5.png'), 'scene artwork changes at the same rounded boundary as its caption');
     if (process.env.GRIMOIRE_VIDEO_REVIEW_DIR) {
       mkdirSync(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, {recursive: true});
-      copyFileSync(join(run, 'review/story-first.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
-      copyFileSync(join(run, 'review/story-second.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
+      copyFileSync(join(run, 'review/story-frame-2.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
+      copyFileSync(join(run, 'review/story-frame-5.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
     }
   } finally {rmSync(root, {recursive: true, force: true});}
 });
@@ -428,6 +543,46 @@ test('invalid licensing metadata fails explicitly before accepting imported audi
     assert.ok(m.blocker);
     assert.equal(m.audio, null);
   } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('public production syncs captions to supplied speech timing and warns when measured speech exceeds its target', {timeout: 180_000}, () => {
+  const root = mkdtempSync(join(tmpdir(), 'grimoire-captions-'));
+  try {
+    const run = join(root, 'run');
+    json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free', '--target-duration', '0.5']));
+    const briefing = join(root, 'briefing.json');
+    const proposal = simpleBriefingFixture() as any;
+    proposal.narration[0].text = 'A fala acompanha o movimento do céu.';
+    proposal.storyboard[0].composition.headline = 'O céu em movimento';
+    writeFileSync(briefing, JSON.stringify(proposal));
+    json(cli(['import-briefing', run, '--briefing', briefing]));
+
+    const audio = join(root, 'voice.wav');
+    const generated = spawnSync(ffmpeg!, ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-ar', '48000', audio], {encoding: 'utf8'});
+    assert.equal(generated.status, 0, generated.stderr);
+    const alignment = join(root, 'alignment.json');
+    writeFileSync(alignment, JSON.stringify({provenance: 'supplied', segments: [
+      {id: 'line-001', text: proposal.narration[0].text, start: 0.13, end: 0.62},
+    ]}));
+    const args = ['import-audio', run, '--audio', audio, '--alignment', alignment, '--origin', 'Generated local test media', '--audio-license', 'CC0'];
+    const imported = json(cli(args));
+    assert.equal(imported.audio.alignment.provenance, 'supplied');
+    assert.ok(imported.audio.duration >= 1 && imported.audio.duration < 1.1);
+    assert.match(imported.progress.at(-1).detail, /target|targeted|shorten|re-record/i);
+    assert.match(imported.progress.at(-1).detail, /not accelerated|without speeding|not speed/i);
+    assert.ok(imported.artifacts.captions);
+    const captionsPath = join(run, imported.artifacts.captions.path);
+    const captions = readFileSync(captionsPath, 'utf8');
+    assert.match(captions, /00:00:00\.130 --> 00:00:00\.620/);
+    assert.match(captions, /A fala acompanha o movimento do céu\./);
+
+    json(cli(['frame', run, '--frame', '4', '--output', 'review/caption-active.png']));
+    json(cli(['frame', run, '--frame', '3', '--output', 'review/caption-before.png']));
+    json(cli(['frame', run, '--frame', '19', '--output', 'review/caption-inactive.png']));
+    const captionBand = (file: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, file), '-vf', 'crop=900:150:90:1750', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 150 * 3}).stdout;
+    assert.notDeepEqual(captionBand('review/caption-active.png'), captionBand('review/caption-inactive.png'), 'the active caption must be burned into its aligned frame interval');
+    assert.deepEqual(captionBand('review/caption-before.png'), captionBand('review/caption-inactive.png'), 'a frame sampled before the caption start must not show that caption');
+  } finally {rmSync(root, {recursive: true, force: true});}
 });
 
 test('alignment and scene duration follow decoded audio when the video container is longer', () => {

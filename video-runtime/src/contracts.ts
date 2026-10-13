@@ -5,7 +5,7 @@ export const relativePath = z.string().min(1).refine((p) => !p.startsWith('/') &
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const artifact = z.object({id, path: relativePath, sha256: hash}).strict();
 export const alignmentSchema = z.object({
-  provenance: z.literal('supplied'),
+  provenance: z.enum(['supplied', 'elevenlabs-character-timings']),
   segments: z.array(z.object({id, text: z.string().trim().min(1), start: z.number().nonnegative(), end: z.number().positive()}).strict()).min(1),
 }).strict();
 export const rightsSchema = z.object({origin: z.string().trim().min(1), license: z.string().trim().min(1), attribution: z.string()}).strict();
@@ -120,7 +120,8 @@ export const briefingProposalSchema = z.object({
 export type BriefingProposal = z.infer<typeof briefingProposalSchema>;
 export function validateBriefingAlignment(alignment: z.infer<typeof alignmentSchema>, proposal: BriefingProposal) {
   const narration = proposal.narration;
-  if (alignment.segments.length !== narration.length || alignment.segments.some((segment, index) => segment.id !== narration[index]?.id || segment.text !== narration[index]?.text)) {
+  const normalizeSpokenText = (text: string) => text.normalize('NFC').trim().replace(/\s+/gu, ' ');
+  if (alignment.segments.length !== narration.length || alignment.segments.some((segment, index) => segment.id !== narration[index]?.id || normalizeSpokenText(segment.text) !== normalizeSpokenText(narration[index]?.text ?? ''))) {
     throw new Error('Supplied alignment IDs and text must match clean narration in script order');
   }
 }
@@ -129,16 +130,24 @@ export const manifestSchema = z.object({
   schemaVersion: z.literal(1), id, revision: z.number().int().positive(),
   title: z.string().trim().min(1).max(80), language: z.enum(['pt-BR', 'en']),
   purpose: z.enum(['channel', 'promotion']),
+  durationTargetSeconds: z.number().positive().nullable().default(null),
+  durationAssessment: z.object({targetSeconds: z.number().positive(), measuredSeconds: z.number().positive(), status: z.enum(['within_target', 'over_target']), recommendation: z.string().nullable()}).strict().nullable().default(null),
   briefing: briefingRecordSchema.nullable().default(null),
   format: z.object({width: z.literal(1080), height: z.literal(1920), fps: z.literal(30)}).strict(),
   remotionLicense: z.enum(['free', 'company']),
   assetRights: rightsSchema.nullable(),
   scene: z.object({id, title: z.string().trim().min(1).max(80), background: z.string().regex(/^#[0-9a-fA-F]{6}$/), accent: z.string().regex(/^#[0-9a-fA-F]{6}$/), font: artifact.nullable(), image: artifact.nullable(), startFrame: z.literal(0), endFrame: z.number().int().positive()}).strict(),
-  audio: z.object({id, original: artifact, working: artifact, duration: z.number().positive(), alignment: alignmentSchema, rights: rightsSchema}).strict().nullable(),
-  budgets: z.object({narration: z.object({paidEnabled: z.literal(false), limit: z.literal(0), actual: z.literal(0)}).strict(), visuals: z.object({paidEnabled: z.literal(false), limit: z.literal(0), actual: z.literal(0)}).strict()}).strict(),
+  audio: z.object({id, original: artifact, working: artifact, duration: z.number().positive(), alignment: alignmentSchema, rights: rightsSchema, synthesis: z.object({provider: z.literal('elevenlabs'), modelId: z.string().min(1), voiceId: z.string().min(1), language: z.enum(['pt-BR', 'en']), licenseConditions: z.string().min(1), commercialUse: z.literal('unverified')}).strict().nullable().default(null)}).strict().nullable(),
+  budgets: z.object({
+    narration: z.object({paidEnabled: z.boolean(), limit: z.number().int().nonnegative(), estimated: z.number().int().nonnegative().default(0), actual: z.number().int().nonnegative(), uncertain: z.boolean().default(false), inFlight: z.boolean().default(false), pendingCharacters: z.number().int().nonnegative().default(0)}).strict().superRefine((budget, ctx) => {
+      if (budget.actual > budget.estimated || budget.pendingCharacters > budget.estimated || budget.estimated > budget.limit) ctx.addIssue({code: 'custom', message: 'Narration usage must stay within its reserved character limit'});
+      if ((budget.pendingCharacters > 0) !== (budget.inFlight || budget.uncertain)) ctx.addIssue({code: 'custom', message: 'An in-flight or uncertain narration request must have a persisted character reservation'});
+    }),
+    visuals: z.object({paidEnabled: z.literal(false), limit: z.literal(0), actual: z.literal(0)}).strict(),
+  }).strict(),
   previewSourceHash: hash.nullable(),
-  approvals: z.array(z.object({target: z.enum(['briefing', 'audio', 'scene']), digest: hash, decision: z.enum(['approved', 'rejected']), reviewer: z.string().trim().min(1), notes: z.string(), at: z.string().datetime()}).strict()),
-  artifacts: z.object({preview: artifact.nullable(), final: artifact.nullable(), report: artifact.nullable()}).strict(),
+  approvals: z.array(z.object({target: z.enum(['briefing', 'audio', 'scene', 'voice']), digest: hash, decision: z.enum(['approved', 'rejected']), reviewer: z.string().trim().min(1), notes: z.string(), at: z.string().datetime()}).strict()),
+  artifacts: z.object({preview: artifact.nullable(), final: artifact.nullable(), report: artifact.nullable(), captions: artifact.nullable().default(null), voicePreview: z.object({artifact, provider: z.literal('elevenlabs'), modelId: z.string(), voiceId: z.string(), language: z.enum(['pt-BR', 'en']), duration: z.number().positive(), alignment: alignmentSchema, licenseConditions: z.string(), commercialUse: z.literal('unverified')}).strict().nullable().default(null)}).strict(),
   status: z.enum(['pending', 'running', 'awaiting_review', 'approved', 'failed', 'blocked', 'validated']),
   progress: z.array(z.object({stage: z.string(), status: z.string(), at: z.string().datetime(), detail: z.string()}).strict()),
   blocker: z.string().nullable(),
