@@ -2,7 +2,7 @@ import {mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, lstatSyn
 import {resolve, join, dirname, extname, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash, randomUUID} from 'node:crypto';
-import {manifestSchema, validateTiming, type Manifest, type Artifact} from './contracts';
+import {briefingProposalSchema, manifestSchema, validateTiming, type Manifest, type Artifact, type BriefingProposal} from './contracts';
 
 type Options = Record<string, string | undefined>;
 const now = () => new Date().toISOString();
@@ -27,17 +27,18 @@ export function safePath(root: string, path: string): string {
   return full;
 }
 export function checkArtifacts(root: string, manifest: Manifest) {
-  for (const record of [manifest.audio?.original, manifest.audio?.working, manifest.scene.font, manifest.scene.image, ...Object.values(manifest.artifacts)]) {
+  for (const record of [manifest.briefing?.artifact, manifest.audio?.original, manifest.audio?.working, manifest.scene.font, manifest.scene.image, ...Object.values(manifest.artifacts)]) {
     if (record && artifact(root, record.path, record.id).sha256 !== record.sha256) throw new Error(`Artifact changed: ${record.id}`);
   }
 }
 export function reviewDigest(m: Manifest, target: string): string {
-  if (target === 'briefing') return digest({title: m.title, language: m.language, purpose: m.purpose, scene: m.scene});
+  if (target === 'briefing') return digest(m.briefing ? {proposal: m.briefing.proposal, artifact: m.briefing.artifact} : {title: m.title, language: m.language, purpose: m.purpose, scene: m.scene});
   if (target === 'audio') {if (!m.audio) throw new Error('Import audio first'); return digest(m.audio);}
   if (target === 'scene') {if (m.previewSourceHash !== digest(readFileSync(join(runtimeRoot, 'src', 'scene.tsx'), 'utf8'))) throw new Error('Scene source changed; new preview required'); if (!m.artifacts.preview) throw new Error('Render a scene preview first'); return digest({preview: m.artifacts.preview, source: m.previewSourceHash, scene: m.scene, audio: m.audio, format: m.format});}
   throw new Error('Unknown review target');
 }
 export function requireReview(m: Manifest, target: 'briefing' | 'audio' | 'scene') {
+  if (target === 'briefing' && !m.briefing) throw new Error('Import a reviewed briefing proposal first');
   const last = m.approvals.filter((a) => a.target === target).at(-1);
   if (last?.decision !== 'approved' || last.digest !== reviewDigest(m, target)) throw new Error(`Human ${target} review required for current content`);
 }
@@ -68,6 +69,7 @@ export async function execute(command: string, run: string, options: Options) {
       const title = options.title;
       const m = manifestSchema.parse({schemaVersion: 1, id: randomUUID(), revision: 1, title,
         language: options.language ?? 'pt-BR', purpose: options.purpose ?? 'channel', remotionLicense: options.license,
+        briefing: null,
         format: {width: 1080, height: 1920, fps: 30},
         assetRights: options.font || options.image ? {origin: options['asset-origin'], license: options['asset-license'], attribution: options.attribution ?? ''} : null,
         scene: {id: 'scene-001', title, background: '#f4f0e8', accent: '#245bcc', font: null, image: null, startFrame: 0, endFrame: 30},
@@ -110,7 +112,8 @@ export async function execute(command: string, run: string, options: Options) {
       progress(root, m, 'review', options.decision === 'approved' ? 'approved' : 'awaiting_review');
     } else {
       const {importAudio, render, validate, frame} = await import('./media');
-      if (command === 'import-audio') await importAudio(root, m, options);
+      if (command === 'import-briefing') importBriefing(root, m, options);
+      else if (command === 'import-audio') await importAudio(root, m, options);
       else if (command === 'preview' || command === 'render') await render(root, m, command);
       else if (command === 'validate') await validate(root, m);
       else if (command === 'frame') await frame(root, m, options);
@@ -123,5 +126,24 @@ export async function execute(command: string, run: string, options: Options) {
     else writeFileSync(join(root, 'failure.json'), JSON.stringify({status: 'failed', error: message}));
     throw error;
   } finally {closeSync(lock); unlinkSync(join(root, '.run.lock'));}
+}
+
+function importBriefing(root: string, manifest: Manifest, options: Options) {
+  if (!options.briefing) throw new Error('Briefing JSON path is required');
+  const raw = readFileSync(options.briefing);
+  const proposal = briefingProposalSchema.parse(JSON.parse(raw.toString('utf8'))) as BriefingProposal;
+  if (proposal.purpose !== manifest.purpose || proposal.language !== manifest.language) {
+    throw new Error('Briefing purpose and language must match the production run');
+  }
+  const hash = createHash('sha256').update(raw).digest('hex');
+  const path = `input/briefing-${hash}.json`;
+  const destination = safePath(root, path);
+  if (existsSync(destination)) {
+    if (createHash('sha256').update(readFileSync(destination)).digest('hex') !== hash) throw new Error('Existing briefing artifact does not match its content hash');
+  } else writeFileSync(destination, raw, {flag: 'wx'});
+  manifest.briefing = {proposal, artifact: artifact(root, path, `briefing-${hash.slice(0, 16)}`)};
+  manifest.artifacts = {preview: null, final: null, report: null};
+  manifest.previewSourceHash = null;
+  progress(root, manifest, 'import-briefing', 'awaiting_review', 'Structured briefing imported; script and direction review required');
 }
 export const runtimeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');

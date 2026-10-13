@@ -263,10 +263,25 @@ class SkillContractTests(unittest.TestCase):
 
     def test_new_standalone_skills_are_cataloged_and_have_scenarios(self) -> None:
         catalog = (ROOT / "README.md").read_text(encoding="utf-8")
-        for name in ("project-design", "github-issues"):
+        for name in ("project-design", "github-issues", "video-brief"):
             with self.subTest(skill=name):
                 self.assertIn(f"skills/{name}/SKILL.md", catalog)
                 self.assertTrue((ROOT / "tests" / name / "scenarios.md").is_file())
+
+    def test_video_brief_evidence_and_clean_narration_contract(self) -> None:
+        text = self.read_skill("video-brief")
+        for required in (
+            "Brazilian Portuguese",
+            "consultedOn",
+            "fictionalDisclosure",
+            "narration",
+            "supporting source IDs",
+            "reviewCriterion",
+            "Paid calls remain disabled",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, text)
+        self.assertTrue((ROOT / "tests" / "video-brief" / "scenarios.md").is_file())
 
     def test_web_design_psychology_contract(self) -> None:
         text = self.read_skill("web-design-psychology")

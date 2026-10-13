@@ -94,6 +94,10 @@ These skills define a standalone mode or a focused contract that does not requir
 
 - [`gamification-psychology`](skills/gamification-psychology/SKILL.md) — designs points, badges, leaderboards, streaks, and progress systems that move the behavior the product exists to cause rather than the metric that counts it, and ships a kill criterion with every mechanic. Its [evidence base](skills/gamification-psychology/evidence-base.md) separates what the gamification literature actually measured from the statistics that circulate without a source.
 
+### Video production
+
+- [`video-brief`](skills/video-brief/SKILL.md) — turns channel or promotional requests into an evidence-aware briefing, clean narration, production direction, and a reviewable storyboard proposal for the local video runtime.
+
 ### Business planning
 
 - [`business-research`](skills/business-research/SKILL.md) — gathers attributable evidence, confidence, conflicts, and material gaps.
@@ -107,7 +111,7 @@ The orchestration entrypoint and final synthesis skill are documented through th
 
 ## Local video runtime
 
-[`video-runtime`](video-runtime/README.md) is the first local video-production slice: import audio with supplied timing, review a frame-driven Remotion preview, and export a technically validated H.264/AAC MP4. It preserves the historical prototype and uses no paid provider calls. See its guide for setup, human review commands, licensing, and current validation limits.
+[`video-brief`](skills/video-brief/SKILL.md) creates the proposal; [`video-runtime`](video-runtime/README.md) imports that versioned briefing, records human review, aligns storyboard scenes to imported audio, and renders a technically validated H.264/AAC MP4 locally. The workflow preserves the historical prototype and makes no paid provider calls. See the runtime guide for proposal import, human review, licensing, and validation limits.
 
 ## Repository structure
 

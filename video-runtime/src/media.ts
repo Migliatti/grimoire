@@ -6,7 +6,7 @@ import {createHash, randomUUID} from 'node:crypto';
 import ffmpeg from 'ffmpeg-static';
 import {bundle} from '@remotion/bundler';
 import {selectComposition, renderMedia, renderStill} from '@remotion/renderer';
-import {alignmentSchema, validateAlignment, rightsSchema, relativePath, type Manifest} from './contracts';
+import {alignmentSchema, validateAlignment, validateBriefingAlignment, rightsSchema, relativePath, type Manifest} from './contracts';
 import {artifact, progress, requireReview, runtimeRoot, safePath, digest} from './production';
 
 const ffprobe = (createRequire(import.meta.url)('ffprobe-static') as {path: string}).path;
@@ -25,6 +25,7 @@ export async function importAudio(root: string, m: Manifest, options: Record<str
   const source = probe(options.audio);
   if (!source.streams.some((s) => s.codec_type === 'audio')) throw new Error('No audio stream in supplied media');
   const alignment = alignmentSchema.parse(JSON.parse(readFileSync(options.alignment, 'utf8')));
+  if (m.briefing) validateBriefingAlignment(alignment, m.briefing.proposal);
   const temporary = safePath(root, `intermediate/import-${randomUUID()}.wav`);
   try {
     // Explicitly select the first audio stream. Measure the exact decoded track
@@ -54,6 +55,7 @@ function artifactOfExternal(path: string) {return createHash('sha256').update(re
 
 async function composition(root: string, m: Manifest) {
   if (!m.audio) throw new Error('Imported audio required');
+  if (!m.briefing) throw new Error('Imported and reviewed briefing required');
   // Serve only explicitly declared resources, never the entire run or reviewer records.
   const actualDuration = Number(probe(safePath(root, m.audio.working.path)).format.duration);
   if (Math.abs(actualDuration - m.audio.duration) > 0.001) throw new Error('Manifest duration does not match actual working audio');
@@ -64,7 +66,20 @@ async function composition(root: string, m: Manifest) {
     if (record) {const name = `${key}-${record.sha256}${extname(record.path)}`; copyFileSync(safePath(root, record.path), safePath(root, `cached/resources/${name}`)); names[key] = name;}
   }
   const serveUrl = await bundle({entryPoint: join(runtimeRoot, 'src', 'scene.tsx'), publicDir: resources, outDir: safePath(root, 'cached/bundle')});
-  const inputProps = {scene: m.scene, durationInFrames: m.scene.endFrame, resources: names};
+  const proposal = m.briefing.proposal;
+  const alignmentById = new Map(m.audio.alignment.segments.map((segment, index) => [segment.id, {segment, index}]));
+  const boundaryFrames = proposal.storyboard.slice(1).map((scene) => {
+    const aligned = alignmentById.get(scene.narrationSegmentIds[0]!);
+    if (!aligned) throw new Error(`Storyboard references missing aligned narration: ${scene.narrationSegmentIds[0]}`);
+    return Math.round(aligned.segment.start * m.format.fps);
+  });
+  const storyboard = proposal.storyboard.map((scene, index) => {
+    const startFrame = index === 0 ? 0 : boundaryFrames[index - 1]!;
+    const endFrame = boundaryFrames[index] ?? m.scene.endFrame;
+    if (endFrame <= startFrame) throw new Error(`Storyboard scene has no renderable frames: ${scene.id}`);
+    return {...scene, startFrame, endFrame};
+  });
+  const inputProps = {scene: m.scene, storyboard, profile: proposal.profile, purpose: proposal.purpose, language: proposal.language, durationInFrames: m.scene.endFrame, resources: names};
   const selected = await selectComposition({serveUrl, id: 'LocalScene', inputProps, timeoutInMilliseconds: 30_000});
   return {serveUrl, inputProps, composition: selected, timeoutInMilliseconds: 30_000};
 }
@@ -79,7 +94,9 @@ export async function render(root: string, m: Manifest, stage: 'preview' | 'rend
   const temporary = safePath(root, `intermediate/render-r${m.revision}.mp4`);
   await renderMedia({...config, outputLocation: temporary, codec: 'h264', pixelFormat: 'yuv420p', audioCodec: 'aac', concurrency: 2,
     onProgress: ({progress: ratio}) => process.stderr.write(JSON.stringify({stage, progress: Math.round(ratio * 100)}) + '\n')});
-  tool(ffmpeg, ['-v', 'error', '-y', '-i', temporary, '-c', 'copy', '-movflags', '+faststart', safePath(root, output)]);
+  // Normalize the final delivery even when the renderer's intermediate is
+  // tagged full-range (yuvj420p) by a platform-specific FFmpeg build.
+  tool(ffmpeg, ['-v', 'error', '-y', '-i', temporary, '-map', '0:v:0', '-map', '0:a?', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', safePath(root, output)]);
   decode(safePath(root, output));
   if (stage === 'preview') {m.previewSourceHash = digest(readFileSync(join(runtimeRoot, 'src', 'scene.tsx'), 'utf8')); m.artifacts.preview = artifact(root, output, 'scene-preview'); progress(root, m, stage, 'awaiting_review');}
   else {m.artifacts.final = artifact(root, output, 'final-video'); await validate(root, m);}
