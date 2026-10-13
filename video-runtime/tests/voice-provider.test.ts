@@ -63,3 +63,19 @@ test('ambiguous synthesis timeout is reported as potentially charged and is neve
   await assert.rejects(provider.synthesize({voiceId: 'voice-br', modelId: model.model_id, language: 'pt-BR', text: 'O céu.'}, async () => {}), (error: Error & {mayHaveCharged?: boolean}) => error.mayHaveCharged === true && /Do not retry automatically/.test(error.message));
   assert.equal(calls, 3, 'one models check, one voice check, and exactly one charged synthesis attempt');
 });
+
+test('pronunciation dictionary locators include an explicit version ID', async () => {
+  let sentBody: Record<string, unknown> | undefined;
+  const provider = new ElevenLabsProvider('test-secret', async (input, init) => {
+    const url = String(input);
+    if (url.endsWith('/v1/models')) return response([model]);
+    if (url.endsWith('/v1/voices/voice-br')) return response(voice);
+    sentBody = JSON.parse(String(init?.body));
+    return response({audio_base64: 'YXVkaW8=', alignment: {characters: ['O'], character_start_times_seconds: [0], character_end_times_seconds: [0.2]}});
+  });
+  await provider.synthesize({
+    voiceId: 'voice-br', modelId: model.model_id, language: 'pt-BR', text: 'O céu.',
+    pronunciationDictionaryLocators: [{pronunciation_dictionary_id: 'dict-1', version_id: 'version-2'}],
+  } as any, async () => {});
+  assert.deepEqual(sentBody?.pronunciation_dictionary_locators, [{pronunciation_dictionary_id: 'dict-1', version_id: 'version-2'}]);
+});

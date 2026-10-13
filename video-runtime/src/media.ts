@@ -26,8 +26,8 @@ export function measureAudio(path: string) {
   return duration;
 }
 function decode(path: string) {tool(ffmpeg, ['-v', 'error', '-xerror', '-i', path, '-f', 'null', '-']);}
-function secondsToStartFrame(seconds: number, fps: number) {return Math.floor(seconds * fps);}
-function secondsToEndFrame(seconds: number, fps: number) {return Math.ceil(seconds * fps);}
+// Assign a boundary to the first frame sampled at or after its timestamp.
+function secondsToBoundaryFrame(seconds: number, fps: number) {return Math.ceil(seconds * fps);}
 function vttTime(seconds: number) {
   const milliseconds = Math.round(seconds * 1000);
   const hours = Math.floor(milliseconds / 3_600_000);
@@ -103,7 +103,7 @@ async function composition(root: string, m: Manifest) {
   const boundaryFrames = proposal.storyboard.slice(1).map((scene) => {
     const aligned = alignmentById.get(scene.narrationSegmentIds[0]!);
     if (!aligned) throw new Error(`Storyboard references missing aligned narration: ${scene.narrationSegmentIds[0]}`);
-    return secondsToStartFrame(aligned.segment.start, m.format.fps);
+    return secondsToBoundaryFrame(aligned.segment.start, m.format.fps);
   });
   const storyboard = proposal.storyboard.map((scene, index) => {
     const startFrame = index === 0 ? 0 : boundaryFrames[index - 1]!;
@@ -113,8 +113,8 @@ async function composition(root: string, m: Manifest) {
   });
   const captions = m.audio.alignment.segments.map((segment) => ({
     text: segment.text.normalize('NFC').trim().replace(/\s+/gu, ' '),
-    startFrame: secondsToStartFrame(segment.start, m.format.fps),
-    endFrame: Math.min(m.scene.endFrame, secondsToEndFrame(segment.end, m.format.fps)),
+    startFrame: secondsToBoundaryFrame(segment.start, m.format.fps),
+    endFrame: Math.min(m.scene.endFrame, secondsToBoundaryFrame(segment.end, m.format.fps)),
   }));
   const inputProps = {scene: m.scene, storyboard, captions, profile: proposal.profile, purpose: proposal.purpose, language: proposal.language, durationInFrames: m.scene.endFrame, resources: names};
   const selected = await selectComposition({serveUrl, id: 'LocalScene', inputProps, timeoutInMilliseconds: 30_000});

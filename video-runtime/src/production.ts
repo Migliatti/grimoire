@@ -151,12 +151,13 @@ export async function execute(command: string, run: string, options: Options, se
         if (Object.values(voiceSettings).some((value) => typeof value === 'number' && (!Number.isFinite(value) || value < 0 || value > 1))) throw new Error('Voice settings stability, similarity-boost and style must be numbers between 0 and 1');
         if (options['speaker-boost'] !== undefined && !['true', 'false'].includes(options['speaker-boost'])) throw new Error('--speaker-boost must be true or false');
         if (options['speaker-boost'] !== undefined) voiceSettings.use_speaker_boost = options['speaker-boost'] === 'true';
-        const {ElevenLabsProvider, characterAlignment} = await import('./voice-provider');
+        const {ElevenLabsProvider, characterAlignment, parsePronunciationDictionaryLocators} = await import('./voice-provider');
         const provider = services.createNarrationProvider?.() ?? new ElevenLabsProvider(process.env.ELEVENLABS_API_KEY ?? '');
+        const pronunciationDictionaryLocators = parsePronunciationDictionaryLocators(options['pronunciation-dictionary']);
         let reservationMade = false;
         let result;
         try {
-          result = await provider.synthesize({voiceId: options.voice, modelId: options.model, language: m.language, text, voiceSettings, pronunciationDictionaryIds: options['pronunciation-dictionary'] ? options['pronunciation-dictionary'].split(',').filter(Boolean) : undefined}, async () => {
+          result = await provider.synthesize({voiceId: options.voice, modelId: options.model, language: m.language, text, voiceSettings, pronunciationDictionaryLocators}, async () => {
             if (reservationMade) throw new Error('Narration provider attempted more than one paid request for this reservation');
             reservationMade = true;
             budget.estimated += usage;
@@ -222,12 +223,13 @@ function importBriefing(root: string, manifest: Manifest, options: Options) {
     try {validateBriefingAlignment(manifest.audio.alignment, proposal);}
     catch {importedAudioStillMatches = false;}
   }
+  const retainedCaptions = manifest.audio && importedAudioStillMatches ? manifest.artifacts.captions : null;
   manifest.briefing = {proposal, artifact: artifact(root, path, `briefing-${hash.slice(0, 16)}`)};
   if (!importedAudioStillMatches) {
     manifest.audio = null;
     manifest.durationAssessment = null;
   }
-  manifest.artifacts = {preview: null, final: null, report: null, captions: null, voicePreview: null};
+  manifest.artifacts = {preview: null, final: null, report: null, captions: retainedCaptions, voicePreview: null};
   manifest.previewSourceHash = null;
   progress(root, manifest, 'import-briefing', 'awaiting_review', 'Structured briefing imported; script and direction review required');
 }

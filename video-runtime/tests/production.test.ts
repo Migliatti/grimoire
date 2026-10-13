@@ -310,6 +310,22 @@ test('replacing narration clears incompatible imported audio and its derived art
   } finally {rmSync(f.root, {recursive: true, force: true});}
 });
 
+test('re-importing a briefing with unchanged narration preserves its captions', () => {
+  const f = fixture();
+  try {
+    const imported = json(cli(importArgs(f)));
+    const captionsArtifact = imported.artifacts.captions;
+    assert.ok(captionsArtifact);
+    const proposal = simpleBriefingFixture() as any;
+    proposal.storyboard[0].composition.headline = 'Updated visual direction';
+    writeFileSync(f.briefing, JSON.stringify(proposal));
+    const reimported = json(cli(['import-briefing', f.run, '--briefing', f.briefing]));
+    assert.ok(reimported.audio, 'unchanged narration keeps its imported audio');
+    assert.deepEqual(reimported.artifacts.captions, captionsArtifact);
+    assert.match(readFileSync(join(f.run, reimported.artifacts.captions.path), 'utf8'), /Test fixture tone, not speech/);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
 test('public audio import preserves real bytes and measures supplied timing', () => {
   const f = fixture();
   try {
@@ -384,8 +400,8 @@ test('public workflow renders an approved multi-scene briefing against imported 
     assert.equal(generated.status, 0, generated.stderr);
     const alignment = join(root, 'alignment.json');
     writeFileSync(alignment, JSON.stringify({provenance: 'supplied', segments: [
-      {id: 'line-001', text: briefingFixture().narration[0]!.text, start: 0, end: 0.4},
-      {id: 'line-002', text: briefingFixture().narration[1]!.text, start: 0.4, end: 1},
+      {id: 'line-001', text: briefingFixture().narration[0]!.text, start: 0, end: 0.14},
+      {id: 'line-002', text: briefingFixture().narration[1]!.text, start: 0.14, end: 1},
     ]}));
     const args = ['import-audio', run, '--audio', audio, '--alignment', alignment, '--origin', 'Locally generated test tone', '--audio-license', 'CC0'];
     const imported = json(cli(args));
@@ -401,16 +417,16 @@ test('public workflow renders an approved multi-scene briefing against imported 
     }
     const result = JSON.parse(rendered.stdout);
     assert.equal(result.status, 'validated');
-    for (const frame of [5, 11, 12, 20]) json(cli(['frame', run, '--frame', String(frame), '--output', `review/story-frame-${frame}.png`]));
+    for (const frame of [2, 4, 5, 20]) json(cli(['frame', run, '--frame', String(frame), '--output', `review/story-frame-${frame}.png`]));
     const pixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 1080 * 1920 * 4}).stdout;
     const artworkPixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-vf', 'crop=900:470:90:260', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 470 * 3}).stdout;
-    assert.deepEqual(pixels('review/story-frame-5.png'), pixels('review/story-frame-11.png'), 'the first scene includes frames before its exclusive end');
-    assert.deepEqual(pixels('review/story-frame-12.png'), pixels('review/story-frame-20.png'), 'the second scene begins inclusively at frame 12');
-    assert.notDeepEqual(artworkPixels('review/story-frame-11.png'), artworkPixels('review/story-frame-12.png'), 'scene artwork changes exactly at frame 12');
+    assert.deepEqual(pixels('review/story-frame-2.png'), pixels('review/story-frame-4.png'), 'frame before the rounded boundary keeps the first scene and caption');
+    assert.deepEqual(pixels('review/story-frame-5.png'), pixels('review/story-frame-20.png'), 'frame at the rounded boundary switches to the second scene and caption');
+    assert.notDeepEqual(artworkPixels('review/story-frame-4.png'), artworkPixels('review/story-frame-5.png'), 'scene artwork changes at the same rounded boundary as its caption');
     if (process.env.GRIMOIRE_VIDEO_REVIEW_DIR) {
       mkdirSync(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, {recursive: true});
-      copyFileSync(join(run, 'review/story-frame-5.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
-      copyFileSync(join(run, 'review/story-frame-12.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
+      copyFileSync(join(run, 'review/story-frame-2.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
+      copyFileSync(join(run, 'review/story-frame-5.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
     }
   } finally {rmSync(root, {recursive: true, force: true});}
 });
@@ -560,10 +576,12 @@ test('public production syncs captions to supplied speech timing and warns when 
     assert.match(captions, /00:00:00\.130 --> 00:00:00\.620/);
     assert.match(captions, /A fala acompanha o movimento do céu\./);
 
-    json(cli(['frame', run, '--frame', '3', '--output', 'review/caption-active.png']));
+    json(cli(['frame', run, '--frame', '4', '--output', 'review/caption-active.png']));
+    json(cli(['frame', run, '--frame', '3', '--output', 'review/caption-before.png']));
     json(cli(['frame', run, '--frame', '19', '--output', 'review/caption-inactive.png']));
     const captionBand = (file: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, file), '-vf', 'crop=900:150:90:1750', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 150 * 3}).stdout;
     assert.notDeepEqual(captionBand('review/caption-active.png'), captionBand('review/caption-inactive.png'), 'the active caption must be burned into its aligned frame interval');
+    assert.deepEqual(captionBand('review/caption-before.png'), captionBand('review/caption-inactive.png'), 'a frame sampled before the caption start must not show that caption');
   } finally {rmSync(root, {recursive: true, force: true});}
 });
 

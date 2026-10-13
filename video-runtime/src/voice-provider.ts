@@ -1,4 +1,5 @@
-export type NarrationInput = {voiceId: string; modelId: string; language: 'pt-BR' | 'en'; text: string; voiceSettings?: {stability?: number; similarity_boost?: number; style?: number; use_speaker_boost?: boolean}; pronunciationDictionaryIds?: string[]};
+export type PronunciationDictionaryLocator = {pronunciation_dictionary_id: string; version_id: string};
+export type NarrationInput = {voiceId: string; modelId: string; language: 'pt-BR' | 'en'; text: string; voiceSettings?: {stability?: number; similarity_boost?: number; style?: number; use_speaker_boost?: boolean}; pronunciationDictionaryLocators?: PronunciationDictionaryLocator[]};
 export type ProviderAlignment = {characters: string[]; character_start_times_seconds: number[]; character_end_times_seconds: number[]};
 export type NarrationProviderResult = {audioBase64: string; alignment: ProviderAlignment; modelId: string; voiceId: string; characterCount: number; licenseConditions: string};
 export interface NarrationProvider {synthesize(input: NarrationInput, beforeChargedRequest: () => Promise<void>): Promise<NarrationProviderResult>}
@@ -8,6 +9,17 @@ type Voice = {voice_id: string; name: string; labels?: Record<string, string>; v
 
 export class NarrationProviderError extends Error {
   constructor(message: string, readonly mayHaveCharged = false) {super(message); this.name = 'NarrationProviderError';}
+}
+
+export function parsePronunciationDictionaryLocators(value?: string): PronunciationDictionaryLocator[] | undefined {
+  if (value === undefined) return undefined;
+  const locators = value.split(',').map((item) => {
+    const [pronunciation_dictionary_id, version_id, extra] = item.trim().split(':');
+    if (!pronunciation_dictionary_id || !version_id || extra !== undefined) throw new Error('Pronunciation dictionaries must use <dictionary-id>:<version-id> pairs');
+    return {pronunciation_dictionary_id, version_id};
+  });
+  if (locators.length === 0) throw new Error('At least one pronunciation dictionary ID/version pair is required');
+  return locators;
 }
 
 const endpoint = 'https://api.elevenlabs.io';
@@ -57,7 +69,7 @@ export class ElevenLabsProvider implements NarrationProvider {
     const response = await this.request(`${endpoint}/v1/text-to-speech/${encodeURIComponent(input.voiceId)}/with-timestamps`, {
       method: 'POST', headers: {'content-type': 'application/json'},
       // language_code is optional and some otherwise multilingual models reject it.
-      body: JSON.stringify({text: input.text, model_id: input.modelId, voice_settings: input.voiceSettings, pronunciation_dictionary_locators: input.pronunciationDictionaryIds?.map((pronunciation_dictionary_id) => ({pronunciation_dictionary_id}))}),
+      body: JSON.stringify({text: input.text, model_id: input.modelId, voice_settings: input.voiceSettings, pronunciation_dictionary_locators: input.pronunciationDictionaryLocators}),
     }, true);
     let data: {audio_base64?: unknown; alignment?: ProviderAlignment; normalized_alignment?: ProviderAlignment};
     try {data = await response.json() as typeof data;}
