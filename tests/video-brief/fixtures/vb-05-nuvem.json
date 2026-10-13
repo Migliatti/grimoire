@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "briefing-nuvem-001",
+  "title": "Nuvem: uma pausa leve",
+  "purpose": "promotion",
+  "language": "pt-BR",
+  "request": {
+    "subject": "Caneca de cerâmica fictícia Nuvem",
+    "audience": "Pessoas que gostam de pequenos rituais de pausa",
+    "objective": "Apresentar uma demonstração visual lúdica de uma caneca imaginária",
+    "coreMessage": "Nuvem é um conceito fictício para uma pausa aconchegante."
+  },
+  "promotion": {
+    "mode": "fictional",
+    "name": "Nuvem",
+    "fictionalDisclosure": "Demonstração fictícia; nenhuma caneca ou oferta real existe.",
+    "offer": "Conceito visual imaginário, sem oferta comercial",
+    "targetAudience": "Pessoas que gostam de pequenos rituais de pausa",
+    "cta": "Imagine sua próxima pausa"
+  },
+  "profile": {
+    "id": "profile-playful",
+    "name": "Pausa colorida",
+    "typography": {"heading": "Arial Rounded MT Bold", "body": "Arial"},
+    "colors": {"background": "#fff4e8", "foreground": "#392b48", "accent": "#e7779b"},
+    "voicePreference": "Português brasileiro, leve e sorridente",
+    "motionLanguage": "Movimentos macios e pequenos, como vapor subindo"
+  },
+  "direction": {
+    "hook": "E se uma nuvem virasse caneca?",
+    "tone": "Brincalhão e acolhedor",
+    "visualApproach": "Formas arredondadas e vapor em espiral identificam o objeto como conceito imaginário",
+    "callToAction": "Imagine sua próxima pausa"
+  },
+  "narration": [
+    {"id": "line-001", "text": "Conheça Nuvem, uma caneca que só existe na imaginação."},
+    {"id": "line-002", "text": "Uma forma redondinha, vapor em espiral e um convite para desacelerar."},
+    {"id": "line-003", "text": "Nuvem é uma demonstração fictícia. Imagine sua próxima pausa."}
+  ],
+  "sources": [],
+  "claims": [],
+  "visualNotes": [
+    {"id": "visual-001", "narrationSegmentIds": ["line-001"], "text": "Manter uma pequena indicação visual de conceito fictício junto ao primeiro close."},
+    {"id": "visual-002", "narrationSegmentIds": ["line-002"], "text": "Usar vapor desenhado em espiral; não sugerir recurso ou material real."}
+  ],
+  "soundPlan": {"music": "Textura leve e alegre, caso trilha aprovada seja adicionada depois.", "effects": ["Toque suave na entrada do vapor"]},
+  "storyboard": [
+    {
+      "id": "scene-001",
+      "purpose": "Apresentar o objeto imaginário e estabelecer a demonstração fictícia",
+      "narrationSegmentIds": ["line-001"],
+      "composition": {"template": "product", "headline": "Nuvem", "supportingText": "Uma caneca que só existe na imaginação.", "data": []},
+      "movement": {"style": "rise", "description": "A silhueta sobe suavemente como uma nuvem", "anchor": "line-001"},
+      "transition": {"type": "fade", "description": "A caneca aparece em uma entrada macia"},
+      "sound": {"cue": "Um toque suave marca a apresentação"},
+      "reviewCriterion": "A natureza fictícia fica clara e a forma parece leve, não um produto disponível."
+    },
+    {
+      "id": "scene-002",
+      "purpose": "Explorar os detalhes lúdicos do conceito sem criar especificações reais",
+      "narrationSegmentIds": ["line-002"],
+      "composition": {"template": "typography", "headline": "Forma macia. Pausa leve.", "supportingText": "Vapor desenhado em espiral.", "data": []},
+      "movement": {"style": "drift", "description": "A composição flutua de leve junto ao vapor", "anchor": "line-002"},
+      "transition": {"type": "slide", "description": "A cena desliza como um sopro de vapor"},
+      "sound": {"cue": "Manter a textura leve sem competir com a narração"},
+      "reviewCriterion": "A cena permanece claramente ilustrativa e não promete atributos materiais."
+    },
+    {
+      "id": "scene-003",
+      "purpose": "Reafirmar que é ficção e encerrar com um convite imaginativo",
+      "narrationSegmentIds": ["line-003"],
+      "composition": {"template": "closing", "headline": "Imagine sua pausa", "supportingText": "Demonstração fictícia", "data": []},
+      "movement": {"style": "pulse", "description": "Um pulso pequeno encerra o convite", "anchor": "line-003"},
+      "transition": {"type": "cut", "description": "Corte limpo para a mensagem final"},
+      "sound": {"cue": "Encerrar suavemente junto à última frase"},
+      "reviewCriterion": "A chamada é imaginativa e não pode ser confundida com compra ou disponibilidade."
+    }
+  ]
+}

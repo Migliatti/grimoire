@@ -1,6 +1,6 @@
-# Local imported-audio production
+# Local video production
 
-This is the first executable slice of the video workflow (#4), separate from the historical `educational-video-kit`. It supports one frame-driven Remotion scene, supplied alignment, recorded human reviews, and local H.264/AAC export at 1080×1920/30 fps. It does not implement the later briefing, narration-provider, caption, correction, or installation tickets.
+The local video workflow starts with the canonical [`video-brief`](../skills/video-brief/SKILL.md) skill and continues through this Remotion runtime. It imports a structured, versioned briefing, records review against its exact digest, aligns storyboard scenes with supplied audio, and exports a local H.264/AAC MP4 at 1080×1920/30 fps. It remains separate from the historical `educational-video-kit` and makes no paid provider calls.
 
 ## Setup
 
@@ -14,45 +14,53 @@ npm test
 
 Dependencies are pinned in `package-lock.json`. FFmpeg and FFprobe are local packages, not global installations. On the first render, Remotion downloads its compatible Chromium headless shell into local `node_modules/.remotion/`; network access is needed for setup. Rendering serves local resources through loopback. No provider calls, credentials, subscriptions, or paid resources are used.
 
-## First video
+## Prepare a reviewed proposal
 
-Create a run with a short scene title (maximum 80 characters). `--license free` declares your eligibility under Remotion's Free License; use `company` only with an existing applicable license. The runtime cannot verify license ownership. [Remotion terms](https://www.remotion.dev/docs/license/faq) were checked on 2026-10-12: individuals and organizations with up to three people can qualify for free use, including commercial use. Other users must verify their applicable license before rendering.
+Create an isolated run and save the JSON proposal produced by `video-brief`. The proposal schema is documented in that skill. Its purpose and language must match the run. Channel proposals use `--purpose channel` and `promotion: null`; promotions use `--purpose promotion` and require either a complete real-product offer record or an explicit fictional-product disclosure. Brazilian Portuguese is the default; use `--language en` for an explicitly English proposal.
+
+`--license free` declares your eligibility under Remotion's Free License; use `company` only with an existing applicable license. The runtime cannot verify license ownership. [Remotion terms](https://www.remotion.dev/docs/license/faq) were checked on 2026-10-12. Verify the license that applies to you before rendering.
 
 ```shell
-npm run video -- init runs/first --title "Uma cena em movimento" --license free
-npm run video -- import-audio runs/first --audio /path/to/narration.wav --alignment /path/to/alignment.json --origin "My own recording" --audio-license "Creator-owned"
+npm run video -- init runs/first --title "O universo tem um centro?" --purpose channel --language pt-BR --license free
+npm run video -- import-briefing runs/first --briefing /path/to/briefing.json
 npm run video -- status runs/first
+npm run video -- review runs/first --target briefing --digest <briefing-digest> --decision approved --reviewer "Your name" --notes "Current script and direction reviewed"
 ```
 
-Supply alignment with actual seconds within the measured decoded audio duration. For media containers, the first audio stream (`0:a:0`) is decoded into the working WAV and measured; a longer video track does not extend valid audio timing. The runtime validates bounds, unique IDs, positive intervals, and monotonic non-overlapping segments. It does not verify that words were actually spoken at those times; human audio review must check that. Planning estimates must not be passed off as measured alignment.
+The runtime validates schema, unique IDs, claim/source references, source consultation dates, clean narration records, scene-to-script references, source-backed numeric data points, supported movement styles, purpose, and language. Movement uses `hold`, `drift`, `zoom`, `orbit`, `pulse`, or `rise`, anchored to a narration segment in that scene. Import stores the original JSON under a relative content-addressed path in `input/` and records the proposal and artifact hash in `manifest.json`. `status` returns the current `reviewDigests.briefing`. Editing or replacing a proposal changes that digest and invalidates its prior approval. Only the human who actually reviewed the current content should record the decision; silence and automated protocol fixtures are not creative approval.
+
+## Import audio and render the storyboard
+
+Alignment must use the narration IDs and exact clean narration text from the imported proposal. Supply actual seconds within measured decoded audio duration. For media containers, the first audio stream (`0:a:0`) is decoded into the working WAV and measured; a longer video track does not extend valid audio timing. Alignment is checked against the actual file but is not independently forced-aligned; human audio review must check word timing.
 
 ```json
 {
   "provenance": "supplied",
   "segments": [
-    {"id": "segment-001", "text": "Uma cena em movimento.", "start": 0, "end": 2.4}
+    {"id": "line-001", "text": "A expansão não aponta para um centro no espaço.", "start": 0, "end": 2.4}
   ]
 }
 ```
 
-Review the proposed title/direction and listen to the preserved imported audio. `status` returns `reviewDigests` for current content. A human reviewer records each decision with the exact digest; substituting an old digest fails. These commands record human decisions, so agents must not use them to invent approval or treat silence as approval. A test operator in the integration suite represents protocol input only, not creative acceptance.
-
 ```shell
-npm run video -- review runs/first --target briefing --digest <briefing-digest> --decision approved --reviewer "Your name" --notes "Title and direction reviewed"
-npm run video -- review runs/first --target audio --digest <audio-digest> --decision approved --reviewer "Your name" --notes "Full imported take listened to; timing checked"
-npm run video -- preview runs/first
+npm run video -- import-audio runs/first --audio /path/to/narration.wav --alignment /path/to/alignment.json --origin "My own recording" --audio-license "Creator-owned"
 npm run video -- status runs/first
+npm run video -- review runs/first --target audio --digest <audio-digest> --decision approved --reviewer "Your name" --notes "Full take listened to; word timing checked"
+npm run video -- preview runs/first
 ```
 
-Watch the generated `preview/video-r<revision>.mp4` with sound. Use a 5–10-second recording for a first production preview. This slice previews the entire imported recording; select a short input rather than expecting scene selection or trimming. Then record the scene decision:
+Watch `preview/video-r<revision>.mp4` with sound. Preview spans the imported recording. The renderer derives contiguous, half-open frame intervals from scene-to-narration references and measured alignment; it fills pauses with the adjacent scene and rejects missing, reordered, or unrenderable scene assignments. It renders the approved profile colors, scene templates, selected movement styles, transitions, and imported narration. Sound-plan cues remain planning notes; no voice/music/effect synthesis is implemented here.
+
+After watching the preview, record the actual scene review and render:
 
 ```shell
-npm run video -- review runs/first --target scene --digest <scene-digest> --decision approved --reviewer "Your name" --notes "Motion and audio reviewed"
+npm run video -- status runs/first
+npm run video -- review runs/first --target scene --digest <scene-digest> --decision approved --reviewer "Your name" --notes "Storyboard motion and audio reviewed"
 npm run video -- render runs/first
 npm run video -- validate runs/first
 ```
 
-The final MP4 is under `final/`; measured properties and full-decoding results are in `review/technical-report-r<revision>.json`. `manifest.json` points to their exact relative paths and SHA-256 hashes. `validated` means technical checks passed; it does not claim creative acceptance, mobile legibility, loudness compliance, or final human listening.
+The final MP4 is under `final/`; measured properties and full-decoding results are in `review/technical-report-r<revision>.json`. The final local encode normalizes H.264 video to `yuv420p`, AAC audio, and MP4 faststart. `validated` means technical checks passed; it does not claim factual or creative acceptance, mobile legibility, loudness compliance, or final human listening.
 
 ## Editable composition and resources
 
