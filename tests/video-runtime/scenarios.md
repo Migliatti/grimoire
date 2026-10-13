@@ -18,3 +18,7 @@ The pre-agreed seam is the public production invocation, as specified in parent 
 - Refuse corrupt audio, invalid timing/schema/reference escapes, modified media, obsolete digests, missing resources and an unloadable font. Preserve inputs and explicit failure/blocker outputs.
 
 See `production.test.ts` in the runtime for executable scenarios. No ElevenLabs call, paid call, real creative approval, speech-quality claim, or historical-prototype change is part of this evaluation.
+
+## Review regression: container duration vs. audio duration
+
+The public test generates a five-second MP4 with an approximately one-second AAC track. Before the correction, importing alignment at 3–4 seconds succeeded (observed RED). The corrected path decodes the first audio stream, measures that working WAV and rejects the same timing with an explicit failed state. Alignment at 0–1 second is accepted, the original MP4 remains byte-identical, and scene duration follows the decoded audio. Loading a subsequently invalid alignment also fails using the shared timing contract.

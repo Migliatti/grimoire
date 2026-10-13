@@ -1,12 +1,12 @@
 import {spawnSync} from 'node:child_process';
-import {copyFileSync, readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs';
+import {copyFileSync, readFileSync, writeFileSync, mkdirSync, existsSync, renameSync, unlinkSync} from 'node:fs';
 import {join, extname} from 'node:path';
 import {createRequire} from 'node:module';
-import {createHash} from 'node:crypto';
+import {createHash, randomUUID} from 'node:crypto';
 import ffmpeg from 'ffmpeg-static';
 import {bundle} from '@remotion/bundler';
 import {selectComposition, renderMedia, renderStill} from '@remotion/renderer';
-import {alignmentSchema, rightsSchema, relativePath, type Manifest} from './contracts';
+import {alignmentSchema, validateAlignment, rightsSchema, relativePath, type Manifest} from './contracts';
 import {artifact, progress, requireReview, runtimeRoot, safePath, digest} from './production';
 
 const ffprobe = (createRequire(import.meta.url)('ffprobe-static') as {path: string}).path;
@@ -22,29 +22,32 @@ function decode(path: string) {tool(ffmpeg, ['-v', 'error', '-xerror', '-i', pat
 export async function importAudio(root: string, m: Manifest, options: Record<string, string | undefined>) {
   if (!options.audio || !options.alignment || !options.origin || !options['audio-license']) throw new Error('Audio, supplied alignment, origin and audio-license required');
   const rights = rightsSchema.parse({origin: options.origin, license: options['audio-license'], attribution: options.attribution ?? ''});
-  const measured = probe(options.audio);
-  const duration = Number(measured.format.duration);
-  if (!measured.streams.some((s) => s.codec_type === 'audio') || !Number.isFinite(duration) || duration <= 0) throw new Error('Invalid audio duration or no audio stream');
-  decode(options.audio);
+  const source = probe(options.audio);
+  if (!source.streams.some((s) => s.codec_type === 'audio')) throw new Error('No audio stream in supplied media');
   const alignment = alignmentSchema.parse(JSON.parse(readFileSync(options.alignment, 'utf8')));
-  let previousEnd = 0;
-  const ids = new Set([m.scene.id, 'audio-001']);
-  for (const segment of alignment.segments) {
-    if (segment.start < previousEnd || segment.end <= segment.start || segment.end > duration) throw new Error('Supplied timing is non-monotonic or outside measured audio');
-    if (ids.has(segment.id)) throw new Error('Duplicate record IDs');
-    ids.add(segment.id); previousEnd = segment.end;
+  const temporary = safePath(root, `intermediate/import-${randomUUID()}.wav`);
+  try {
+    // Explicitly select the first audio stream. Measure the exact decoded track
+    // used by Remotion, not the container (which may contain a longer video).
+    tool(ffmpeg, ['-v', 'error', '-xerror', '-y', '-i', options.audio, '-map', '0:a:0', '-vn', '-ar', '48000', '-c:a', 'pcm_s16le', temporary]);
+    const duration = Number(probe(temporary).format.duration);
+    validateAlignment(alignment, duration, [m.scene.id, 'audio-001']);
+    const inputHash = artifactOfExternal(options.audio);
+    const workingHash = artifactOfExternal(temporary);
+    const originalPath = `input/audio-${inputHash}${extname(options.audio) || '.audio'}`;
+    const workingPath = `intermediate/audio-${inputHash}-${workingHash}.wav`;
+    copyFileSync(options.audio, safePath(root, originalPath));
+    const destination = safePath(root, workingPath);
+    // Retain an already approved identical working file rather than overwriting it.
+    if (!existsSync(destination)) renameSync(temporary, destination);
+    else if (artifactOfExternal(destination) !== workingHash) throw new Error('Existing working audio does not match its content hash');
+    m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment, rights};
+    m.scene.endFrame = Math.ceil(duration * m.format.fps);
+    m.artifacts = {preview: null, final: null, report: null};
+    m.previewSourceHash = null;
+  } finally {
+    if (existsSync(temporary)) unlinkSync(temporary);
   }
-  // Content-addressed paths preserve all previous imports and approvals.
-  const inputHash = artifactOfExternal(options.audio);
-  const originalPath = `input/audio-${inputHash}${extname(options.audio) || '.audio'}`;
-  const workingPath = `intermediate/audio-${inputHash}.wav`;
-  copyFileSync(options.audio, safePath(root, originalPath));
-  tool(ffmpeg, ['-v', 'error', '-y', '-i', options.audio, '-vn', '-ar', '48000', '-c:a', 'pcm_s16le', safePath(root, workingPath)]);
-  m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment,
-    rights};
-  m.scene.endFrame = Math.ceil(duration * m.format.fps);
-  m.artifacts = {preview: null, final: null, report: null};
-  m.previewSourceHash = null;
   progress(root, m, 'import-audio', 'awaiting_review', 'Audio preserved and measured; supplied alignment validated, not independently forced-aligned');
 }
 function artifactOfExternal(path: string) {return createHash('sha256').update(readFileSync(path)).digest('hex');}
@@ -52,8 +55,8 @@ function artifactOfExternal(path: string) {return createHash('sha256').update(re
 async function composition(root: string, m: Manifest) {
   if (!m.audio) throw new Error('Imported audio required');
   // Serve only explicitly declared resources, never the entire run or reviewer records.
-  const actualDuration = Number(probe(safePath(root, m.audio.original.path)).format.duration);
-  if (Math.abs(actualDuration - m.audio.duration) > 0.001) throw new Error('Manifest duration does not match actual imported audio');
+  const actualDuration = Number(probe(safePath(root, m.audio.working.path)).format.duration);
+  if (Math.abs(actualDuration - m.audio.duration) > 0.001) throw new Error('Manifest duration does not match actual working audio');
   const resources = safePath(root, 'cached/resources');
   mkdirSync(resources, {recursive: true});
   const names: Record<string, string | null> = {audio: null, font: null, image: null};

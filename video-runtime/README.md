@@ -24,7 +24,7 @@ npm run video -- import-audio runs/first --audio /path/to/narration.wav --alignm
 npm run video -- status runs/first
 ```
 
-Supply alignment with actual seconds within the measured audio duration. The runtime validates bounds, unique IDs, positive intervals, and monotonic non-overlapping segments. It does not verify that words were actually spoken at those times; human audio review must check that. Planning estimates must not be passed off as measured alignment.
+Supply alignment with actual seconds within the measured decoded audio duration. For media containers, the first audio stream (`0:a:0`) is decoded into the working WAV and measured; a longer video track does not extend valid audio timing. The runtime validates bounds, unique IDs, positive intervals, and monotonic non-overlapping segments. It does not verify that words were actually spoken at those times; human audio review must check that. Planning estimates must not be passed off as measured alignment.
 
 ```json
 {
@@ -68,7 +68,7 @@ npm run video -- frame runs/first --frame 20 --output review/frame-20.png
 
 ## State and recovery
 
-Runs have stable IDs, schema version 1, increasing revisions, atomic manifest checkpoints and an exclusive `.run.lock`. Input, working audio, preview, cache, review and final files are separate. Original audio is preserved byte-for-byte; a 48 kHz PCM working version is created without speeding up speech. Imports and renders keep prior files with content hashes/revisions. Re-importing audio clears current derived outputs and makes old reviews obsolete.
+Runs have stable IDs, schema version 1, increasing revisions, atomic manifest checkpoints and an exclusive `.run.lock`. Input, working audio, preview, cache, review and final files are separate. Original audio is preserved byte-for-byte; a 48 kHz PCM working version is created without speeding up speech. Its measured duration owns alignment bounds and the scene length. Imports and renders keep prior files with content hashes/revisions. Re-importing audio clears current derived outputs and makes old reviews obsolete.
 
 Errors return nonzero status and JSON on stderr; successful invocations return JSON on stdout (use the direct Node command if your caller needs no npm banner). Check `status` and `blocker` for recovery. An unreadable/schema-invalid manifest produces `failure.json` without replacing that manifest. Fix a missing resource or restore its original bytes; rerun the failed command. If a process was interrupted, inspect the PID in `.run.lock` and remove the lock only after that process exits. This slice does not yet provide automatic resume or cache reuse.
 

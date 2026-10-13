@@ -30,16 +30,22 @@ export type Manifest = z.infer<typeof manifestSchema>;
 export type Artifact = z.infer<typeof artifact>;
 export type ReviewTarget = Manifest['approvals'][number]['target'];
 
-export function validateTiming(m: Manifest) {
-  if (!m.audio) return;
+export function validateAlignment(alignment: z.infer<typeof alignmentSchema>, duration: number, reservedIds: string[]) {
+  if (!Number.isFinite(duration) || duration <= 0) throw new Error('Invalid measured audio duration');
   let end = 0;
-  const ids = new Set([m.scene.id, m.audio.id]);
-  for (const segment of m.audio.alignment.segments) {
+  const ids = new Set(reservedIds);
+  if (ids.size !== reservedIds.length) throw new Error('Duplicate record IDs');
+  for (const segment of alignment.segments) {
     if (ids.has(segment.id)) throw new Error('Duplicate record IDs');
     ids.add(segment.id);
-    if (segment.start < end || segment.end <= segment.start || segment.end > m.audio.duration) throw new Error('Supplied timing is non-monotonic or outside measured audio');
+    if (segment.start < end || segment.end <= segment.start || segment.end > duration) throw new Error('Supplied timing is non-monotonic or outside measured audio');
     end = segment.end;
   }
+}
+
+export function validateTiming(m: Manifest) {
+  if (!m.audio) return;
+  validateAlignment(m.audio.alignment, m.audio.duration, [m.scene.id, m.audio.id]);
   if (m.scene.endFrame !== Math.ceil(m.audio.duration * m.format.fps)) throw new Error('Scene interval does not cover measured audio');
   if ((m.scene.font || m.scene.image) && !m.assetRights) throw new Error('Required asset rights missing');
 }

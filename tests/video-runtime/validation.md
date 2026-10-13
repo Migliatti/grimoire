@@ -14,3 +14,9 @@ Negative cases exercised corrupt media, invalid supplied timing/manifests, obsol
 Standards and Spec reviews ran independently. The Standards review found a parent/dangling-symlink output escape; the Spec review found failure-state loss on invalid licensing metadata. Both were corrected, received public regression tests and were verified by the respective reviewers. No findings remain on either axis.
 
 All test workspaces are temporary and cleaned up. Test review records identify an automated protocol fixture. No real human creative approval, speech-quality evaluation, final listening, caption synchronization, loudness/true-peak result, or paid-provider integration is claimed. No paid calls were made and the historical prototype was preserved.
+
+## Follow-up review corrections
+
+The subsequent review identified duplicated timing validation (Standards P3) and container-duration measurement that could accept timestamps beyond decoded audio (Spec P2). Both were corrected: one shared alignment contract now validates imports and loaded manifests; import explicitly decodes the first audio stream and measures the actual working WAV. Original input bytes are preserved, and existing identical working artifacts are retained.
+
+The new public regression first failed on a real five-second MP4 containing approximately one second of AAC audio, then passed after the correction. The final full runtime suite passed all 10 tests (47.0 seconds); typechecking and all 41 repository contracts also passed. Independent Standards and Spec reviewers confirmed both corrections with no remaining findings in the changes.

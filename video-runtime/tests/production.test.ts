@@ -188,3 +188,27 @@ test('invalid licensing metadata fails explicitly before accepting imported audi
     assert.equal(m.audio, null);
   } finally {rmSync(f.root, {recursive: true, force: true});}
 });
+
+test('alignment and scene duration follow decoded audio when the video container is longer', () => {
+  const f = fixture();
+  try {
+    const media = join(f.root, 'long-video.mp4');
+    const generated = spawnSync(ffmpeg!, ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=black:s=64x64:r=30:d=5', '-i', f.audio, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'libx264', '-c:a', 'aac', media], {encoding: 'utf8'});
+    assert.equal(generated.status, 0, generated.stderr);
+    const args = importArgs({...f, audio: media});
+    writeFileSync(f.alignment, JSON.stringify({provenance: 'supplied', segments: [{id: 'segment-001', text: 'Past the audio', start: 3, end: 4}]}));
+    assert.notEqual(cli(args).status, 0, 'Timing past decoded speech must not be accepted using video duration');
+    const failed = json(cli(['status', f.run]));
+    assert.equal(failed.status, 'failed');
+    assert.equal(failed.audio, null);
+    writeFileSync(f.alignment, JSON.stringify({provenance: 'supplied', segments: [{id: 'segment-001', text: 'Actual audio', start: 0, end: 1}]}));
+    const m = json(cli(args));
+    assert.ok(m.audio.duration >= 1 && m.audio.duration < 1.1);
+    assert.ok(m.scene.endFrame >= 30 && m.scene.endFrame <= 33);
+    assert.deepEqual(readFileSync(join(f.run, m.audio.original.path)), readFileSync(media));
+    const manifest = JSON.parse(readFileSync(join(f.run, 'manifest.json'), 'utf8'));
+    manifest.audio.alignment.segments[0].end = 4;
+    writeFileSync(join(f.run, 'manifest.json'), JSON.stringify(manifest));
+    assert.notEqual(cli(['status', f.run]).status, 0, 'Loading must enforce the same timing bounds as import');
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
