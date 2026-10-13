@@ -4,6 +4,7 @@ import {mkdtempSync, readFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
+import {execute} from '../src/production';
 
 const cli = (args: string[]) => spawnSync(process.execPath, ['--import', 'tsx', 'src/cli.ts', ...args], {encoding: 'utf8'});
 const json = (result: ReturnType<typeof cli>) => {
@@ -19,11 +20,96 @@ test('public invocation creates a versioned, portable run without paid services'
     assert.equal(result.revision, 1);
     assert.equal(result.status, 'pending');
     assert.equal(result.budgets.narration.limit, 0);
+    assert.equal(result.budgets.narration.estimated, 0);
     assert.equal(result.budgets.visuals.paidEnabled, false);
     assert.ok(result.id);
     assert.equal(JSON.parse(readFileSync(join(root, 'run/manifest.json'), 'utf8')).id, result.id);
     assert.notEqual(cli(['init', join(root, 'run'), '--title', 'overwrite', '--license', 'free']).status, 0);
   } finally {rmSync(root, {recursive: true, force: true});}
+});
+
+test('paid narration needs explicit per-run authorization and blocks requests above its separate character cap', () => {
+  const f = fixture();
+  try {
+    approve(f.run, 'briefing');
+    const args = ['synthesize-narration', f.run, '--voice', 'voice-br', '--model', 'eleven_multilingual_v2', '--audio-license', 'Pending human license review'];
+    const unauthorized = cli(args);
+    assert.notEqual(unauthorized.status, 0);
+    assert.match(unauthorized.stderr, /Paid narration is not authorized/i);
+    assert.notEqual(cli(['authorize-narration', f.run, '--limit', '80']).status, 0);
+    const authorized = json(cli(['authorize-narration', f.run, '--limit', '10', '--confirm-paid', 'yes']));
+    assert.equal(authorized.budgets.narration.paidEnabled, true);
+    assert.equal(authorized.budgets.narration.limit, 10);
+    assert.equal(authorized.budgets.visuals.paidEnabled, false);
+    const overLimit = cli(args);
+    assert.notEqual(overLimit.status, 0);
+    assert.match(overLimit.stderr, /exceeds the authorized limit/i);
+    const status = json(cli(['status', f.run]));
+    assert.equal(status.budgets.narration.actual, 0);
+    assert.equal(status.budgets.narration.estimated, 0);
+    json(cli(['authorize-narration', f.run, '--limit', '1000', '--confirm-paid', 'yes']));
+    const missingVoiceReview = cli(args);
+    assert.notEqual(missingVoiceReview.status, 0);
+    assert.match(missingVoiceReview.stderr, /Generate and listen to a paid voice preview first/i);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('public execute workflow injects a provider double and persists a character reservation before its charged request', async () => {
+  const f = fixture();
+  try {
+    approve(f.run, 'briefing');
+    await execute('authorize-narration', f.run, {limit: '2000', 'confirm-paid': 'yes'});
+    let persistedReservation = false;
+    let priorActual = 0;
+    const provider = {synthesize: async (input: {voiceId: string; modelId: string; text: string}, beforeChargedRequest: () => Promise<void>) => {
+      await beforeChargedRequest();
+      const manifest = JSON.parse(readFileSync(join(f.run, 'manifest.json'), 'utf8'));
+      assert.equal(manifest.budgets.narration.inFlight, true);
+      assert.equal(manifest.budgets.narration.pendingCharacters, [...input.text].length);
+      assert.equal(manifest.budgets.narration.actual, priorActual);
+      persistedReservation = true;
+      const characters = [...input.text];
+      return {audioBase64: readFileSync(f.audio).toString('base64'), alignment: {characters, character_start_times_seconds: characters.map((_, i) => i * 0.005), character_end_times_seconds: characters.map((_, i) => (i + 1) * 0.005)}, modelId: input.modelId, voiceId: input.voiceId, characterCount: characters.length, licenseConditions: 'Protocol double; terms not reviewed'};
+    }};
+    await execute('voice-preview', f.run, {segment: 'line-001', voice: 'voice-br', model: 'fixture-model'}, {createNarrationProvider: () => provider});
+    assert.equal(persistedReservation, true);
+    const preview = json(cli(['status', f.run]));
+    assert.equal(preview.budgets.narration.inFlight, false);
+    assert.equal(preview.budgets.narration.actual, [...simpleBriefingFixture().narration[0].text].length);
+    assert.ok(preview.artifacts.voicePreview.duration > 0);
+    priorActual = preview.budgets.narration.actual;
+    approve(f.run, 'voice');
+    await execute('synthesize-narration', f.run, {'audio-license': 'Operator review pending', voice: 'voice-br', model: 'fixture-model'}, {createNarrationProvider: () => provider});
+    const completed = json(cli(['status', f.run]));
+    assert.equal(completed.audio.synthesis.provider, 'elevenlabs');
+    assert.equal(completed.audio.synthesis.commercialUse, 'unverified');
+    assert.equal(completed.audio.alignment.provenance, 'elevenlabs-character-timings');
+    assert.deepEqual(readFileSync(join(f.run, completed.audio.original.path)), readFileSync(f.audio));
+    assert.ok(existsSync(join(f.run, completed.audio.working.path)));
+    assert.ok(completed.artifacts.captions);
+    assert.equal(completed.budgets.narration.uncertain, false);
+    assert.equal(completed.budgets.narration.inFlight, false);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('interrupted paid reservations recover as uncertain and require explicit account reconciliation', () => {
+  const f = fixture();
+  try {
+    const manifestPath = join(f.run, 'manifest.json');
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    manifest.budgets.narration = {paidEnabled: true, limit: 500, estimated: 30, actual: 0, uncertain: false, inFlight: true, pendingCharacters: 30};
+    writeFileSync(manifestPath, JSON.stringify(manifest));
+    const recovered = json(cli(['status', f.run]));
+    assert.equal(recovered.budgets.narration.uncertain, true);
+    assert.equal(recovered.budgets.narration.inFlight, false);
+    assert.equal(recovered.budgets.narration.estimated, 30);
+    assert.notEqual(cli(['authorize-narration', f.run, '--limit', '500', '--confirm-paid', 'yes']).status, 0);
+    json(cli(['reconcile-narration', f.run, '--outcome', 'not-charged', '--confirm-reconciled', 'yes']));
+    const reconciled = json(cli(['status', f.run]));
+    assert.equal(reconciled.budgets.narration.uncertain, false);
+    assert.equal(reconciled.budgets.narration.estimated, 0);
+    assert.equal(reconciled.budgets.narration.pendingCharacters, 0);
+  } finally {rmSync(f.root, {recursive: true, force: true});}
 });
 
 import ffmpeg from 'ffmpeg-static';

@@ -7,11 +7,12 @@ try {
   const {positionals, values} = parseArgs({allowPositionals: true, options: {
     title: {type: 'string'}, license: {type: 'string'}, language: {type: 'string'}, purpose: {type: 'string'}, 'target-duration': {type: 'string'},
     briefing: {type: 'string'},
+    limit: {type: 'string'}, 'confirm-paid': {type: 'string'}, 'confirm-reconciled': {type: 'string'}, outcome: {type: 'string'}, voice: {type: 'string'}, model: {type: 'string'}, segment: {type: 'string'}, stability: {type: 'string'}, 'similarity-boost': {type: 'string'}, style: {type: 'string'}, 'speaker-boost': {type: 'string'}, 'pronunciation-dictionary': {type: 'string'},
     audio: {type: 'string'}, alignment: {type: 'string'}, origin: {type: 'string'}, 'audio-license': {type: 'string'}, attribution: {type: 'string'},
     target: {type: 'string'}, decision: {type: 'string'}, reviewer: {type: 'string'}, notes: {type: 'string'}, digest: {type: 'string'},
     'asset-origin': {type: 'string'}, 'asset-license': {type: 'string'}, font: {type: 'string'}, image: {type: 'string'}, frame: {type: 'string'}, output: {type: 'string'},
   }});
-  if (positionals.length !== 2) throw new Error('Usage: npm run video -- <init|status|import-briefing|import-audio|preview|review|render|validate|frame> <run> [options]');
+  if (positionals.length !== 2) throw new Error('Usage: npm run video -- <init|status|import-briefing|import-audio|authorize-narration|reconcile-narration|voice-preview|synthesize-narration|preview|review|render|validate|frame> <run> [options]');
   const result = await execute(positionals[0], positionals[1], values);
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 } catch (error) {

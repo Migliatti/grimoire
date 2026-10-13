@@ -18,6 +18,13 @@ function tool(binary: string | null, args: string[]) {
 }
 type Probe = {format: {duration: string}; streams: {codec_type: string; codec_name: string; pix_fmt?: string; width?: number; height?: number; avg_frame_rate?: string}[]};
 function probe(path: string): Probe {return JSON.parse(tool(ffprobe, ['-v', 'error', '-show_format', '-show_streams', '-of', 'json', path]));}
+export function measureAudio(path: string) {
+  const media = probe(path);
+  if (!media.streams.some((stream) => stream.codec_type === 'audio')) throw new Error('Generated media has no audio stream');
+  const duration = Number(media.format.duration);
+  if (!Number.isFinite(duration) || duration <= 0) throw new Error('Generated audio duration could not be measured');
+  return duration;
+}
 function decode(path: string) {tool(ffmpeg, ['-v', 'error', '-xerror', '-i', path, '-f', 'null', '-']);}
 function secondsToStartFrame(seconds: number, fps: number) {return Math.floor(seconds * fps);}
 function secondsToEndFrame(seconds: number, fps: number) {return Math.ceil(seconds * fps);}
@@ -54,7 +61,7 @@ export async function importAudio(root: string, m: Manifest, options: Record<str
     // Retain an already approved identical working file rather than overwriting it.
     if (!existsSync(destination)) renameSync(temporary, destination);
     else if (artifactOfExternal(destination) !== workingHash) throw new Error('Existing working audio does not match its content hash');
-    m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment, rights};
+    m.audio = {id: 'audio-001', original: artifact(root, originalPath, 'original-audio'), working: artifact(root, workingPath, 'working-audio'), duration, alignment, rights, synthesis: null};
     m.scene.endFrame = Math.ceil(duration * m.format.fps);
     m.durationAssessment = m.durationTargetSeconds === null ? null : {
       targetSeconds: m.durationTargetSeconds,
@@ -62,7 +69,7 @@ export async function importAudio(root: string, m: Manifest, options: Record<str
       status: duration > m.durationTargetSeconds ? 'over_target' : 'within_target',
       recommendation: duration > m.durationTargetSeconds ? 'Shorten or restructure the script, or record a new delivery; imported speech was not accelerated.' : null,
     };
-    m.artifacts = {preview: null, final: null, report: null, captions: null};
+    m.artifacts = {preview: null, final: null, report: null, captions: null, voicePreview: m.artifacts.voicePreview};
     m.previewSourceHash = null;
     const captionsPath = `review/captions-r${m.revision}.vtt`;
     writeFileSync(safePath(root, captionsPath), captionFile(alignment), {flag: 'wx'});
@@ -158,8 +165,8 @@ export async function validate(root: string, m: Manifest) {
   decode(path);
   const report = {schemaVersion: 1, runId: m.id, revision: m.revision, video: m.artifacts.final, measured, checks: {...checks, fullDecode: true},
     technicalPass: Object.values(checks).every(Boolean), creativeAcceptance: 'Not inferred from technical checks; see recorded human reviews',
-    alignment: 'Supplied timing validated against measured audio; speech synchronization requires human review',
-    costs: m.budgets, licenses: {remotion: {version: '4.0.535', declaredEligibility: m.remotionLicense, source: 'https://www.remotion.dev/docs/license/faq', checkedOn: '2026-10-12'}, audio: m.audio.rights, assets: m.assetRights},
+    alignment: m.audio.alignment.provenance === 'supplied' ? 'Supplied timing validated against measured audio; speech synchronization requires human review' : 'Provider character timing mapped to the shared caption alignment contract and validated against measured audio; speech synchronization requires human review',
+    costs: m.budgets, licenses: {remotion: {version: '4.0.535', declaredEligibility: m.remotionLicense, source: 'https://www.remotion.dev/docs/license/faq', checkedOn: '2026-10-12'}, audio: m.audio.rights, narrationProvider: m.audio.synthesis, assets: m.assetRights},
     captions: m.artifacts.captions,
     untested: ['Loudness/true peak targets', 'Mobile legibility', 'Final human audio/creative review']};
   const reportPath = `review/technical-report-r${m.revision}.json`;
