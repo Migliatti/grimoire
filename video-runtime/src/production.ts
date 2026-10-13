@@ -2,7 +2,7 @@ import {mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, lstatSyn
 import {resolve, join, dirname, extname, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash, randomUUID} from 'node:crypto';
-import {briefingProposalSchema, manifestSchema, validateTiming, type Manifest, type Artifact, type BriefingProposal} from './contracts';
+import {briefingProposalSchema, manifestSchema, validateBriefingAlignment, validateTiming, type Manifest, type Artifact, type BriefingProposal} from './contracts';
 
 type Options = Record<string, string | undefined>;
 const now = () => new Date().toISOString();
@@ -141,7 +141,13 @@ function importBriefing(root: string, manifest: Manifest, options: Options) {
   if (existsSync(destination)) {
     if (createHash('sha256').update(readFileSync(destination)).digest('hex') !== hash) throw new Error('Existing briefing artifact does not match its content hash');
   } else writeFileSync(destination, raw, {flag: 'wx'});
+  let importedAudioStillMatches = true;
+  if (manifest.audio) {
+    try {validateBriefingAlignment(manifest.audio.alignment, proposal);}
+    catch {importedAudioStillMatches = false;}
+  }
   manifest.briefing = {proposal, artifact: artifact(root, path, `briefing-${hash.slice(0, 16)}`)};
+  if (!importedAudioStillMatches) manifest.audio = null;
   manifest.artifacts = {preview: null, final: null, report: null};
   manifest.previewSourceHash = null;
   progress(root, manifest, 'import-briefing', 'awaiting_review', 'Structured briefing imported; script and direction review required');

@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Audio, Composition, cancelRender, continueRender, delayRender, Img, interpolate, registerRoot, staticFile, useCurrentFrame} from 'remotion';
 import type {BriefingProposal, Manifest} from './contracts';
+import {composeTransforms, movementTransform as transformForMovement} from './motion';
+import {headingFontFamily} from './scene-style';
 
 type PlannedScene = BriefingProposal['storyboard'][number] & {startFrame: number; endFrame: number};
 type Props = {
@@ -64,23 +66,13 @@ const Scene = ({scene: fallback, storyboard, profile, purpose, language, resourc
   const localFrame = Math.max(0, frame - planned.startFrame);
   const entrance = planned.transition.type === 'cut' ? 1 : interpolate(localFrame, [0, 16], [0, 1], {extrapolateRight: 'clamp'});
   const entranceTransform = planned.transition.type === 'slide' ? `translateX(${(1 - entrance) * 80}px)` : `translateY(${(1 - entrance) * 40}px)`;
-  const movementTransform = (() => {
-    switch (planned.movement.style) {
-      case 'drift': return `translateX(${Math.sin(localFrame / 24) * 18}px)`;
-      case 'zoom': return `scale(${1 + Math.min(localFrame, 60) / 240})`;
-      case 'orbit': return `rotate(${Math.sin(localFrame / 30) * 3}deg)`;
-      case 'pulse': return `scale(${1 + Math.sin(localFrame / 10) * 0.025})`;
-      case 'rise': return `translateY(${(1 - interpolate(localFrame, [0, 30], [0, 1], {extrapolateRight: 'clamp'})) * 24}px)`;
-      case 'hold': return 'none';
-    }
-  })();
-  const transform = `${entranceTransform} ${movementTransform}`;
+  const transform = composeTransforms(entranceTransform, transformForMovement(planned.movement.style, localFrame));
   return <AbsoluteFill style={{background: profile.colors.background, color: profile.colors.foreground, padding: '180px 90px 260px', fontFamily: resources.font ? 'ProductionFont' : `${profile.typography.body}, Arial, sans-serif`}}>
     <div style={{fontSize: 28, letterSpacing: 5, textTransform: 'uppercase', color: profile.colors.accent}}>{profile.name} · {purpose}</div>
     <div style={{position: 'relative', height: 600, marginTop: 56, overflow: 'hidden', opacity: entrance, transform}}>
       {resources.image ? <Img src={staticFile(resources.image)} style={{width: '100%', height: '100%', objectFit: 'contain'}}/> : <Artwork scene={planned} accent={profile.colors.accent} frame={localFrame} language={language}/>}
     </div>
-    <h1 style={{fontFamily: `${profile.typography.heading}, Arial, sans-serif`, fontSize: 76, lineHeight: 1.06, fontWeight: 700, overflowWrap: 'anywhere', margin: '40px 0 0', opacity: entrance, transform}}>{planned.composition.headline}</h1>
+    <h1 style={{fontFamily: headingFontFamily(profile.typography.heading, Boolean(resources.font)), fontSize: 76, lineHeight: 1.06, fontWeight: 700, overflowWrap: 'anywhere', margin: '40px 0 0', opacity: entrance, transform}}>{planned.composition.headline}</h1>
     {planned.composition.supportingText && <p style={{fontSize: 34, lineHeight: 1.3, maxWidth: 850, marginTop: 24, opacity: entrance}}>{planned.composition.supportingText}</p>}
     {resources.audio && <Audio src={staticFile(resources.audio)}/>}
   </AbsoluteFill>;

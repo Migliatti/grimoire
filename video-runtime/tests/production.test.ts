@@ -201,6 +201,27 @@ test('briefing approval becomes stale after the proposal changes and legacy runs
   } finally {rmSync(f.root, {recursive: true, force: true});}
 });
 
+test('replacing narration clears incompatible imported audio and its derived artifacts', () => {
+  const f = fixture();
+  try {
+    const importedAudio = json(cli(importArgs(f)));
+    approve(f.run, 'audio');
+    assert.ok(importedAudio.audio);
+    const proposal = simpleBriefingFixture() as any;
+    proposal.narration[0].text = 'Revised clean narration for a new recording';
+    writeFileSync(f.briefing, JSON.stringify(proposal));
+    const result = cli(['import-briefing', f.run, '--briefing', f.briefing]);
+    assert.equal(result.status, 0, result.stderr);
+    const status = json(cli(['status', f.run]));
+    assert.equal(status.briefing.proposal.narration[0].text, proposal.narration[0].text);
+    assert.equal(status.audio, null);
+    assert.equal(status.artifacts.preview, null);
+    assert.equal(status.artifacts.final, null);
+    assert.equal(status.artifacts.report, null);
+    assert.equal(status.status, 'awaiting_review');
+  } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
 test('public audio import preserves real bytes and measures supplied timing', () => {
   const f = fixture();
   try {
