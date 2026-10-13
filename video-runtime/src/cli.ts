@@ -5,7 +5,7 @@ import {execute} from './production';
 
 try {
   const {positionals, values} = parseArgs({allowPositionals: true, options: {
-    title: {type: 'string'}, license: {type: 'string'}, language: {type: 'string'}, purpose: {type: 'string'},
+    title: {type: 'string'}, license: {type: 'string'}, language: {type: 'string'}, purpose: {type: 'string'}, 'target-duration': {type: 'string'},
     briefing: {type: 'string'},
     audio: {type: 'string'}, alignment: {type: 'string'}, origin: {type: 'string'}, 'audio-license': {type: 'string'}, attribution: {type: 'string'},
     target: {type: 'string'}, decision: {type: 'string'}, reviewer: {type: 'string'}, notes: {type: 'string'}, digest: {type: 'string'},

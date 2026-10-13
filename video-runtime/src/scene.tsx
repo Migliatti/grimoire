@@ -5,9 +5,10 @@ import {composeTransforms, movementTransform as transformForMovement} from './mo
 import {headingFontFamily} from './scene-style';
 
 type PlannedScene = BriefingProposal['storyboard'][number] & {startFrame: number; endFrame: number};
+type Caption = {text: string; startFrame: number; endFrame: number};
 type Props = {
   scene: Manifest['scene']; storyboard: PlannedScene[]; profile: BriefingProposal['profile']; purpose: BriefingProposal['purpose']; language: BriefingProposal['language'];
-  durationInFrames: number; resources: {audio: string | null; font: string | null; image: string | null};
+  captions: Caption[]; durationInFrames: number; resources: {audio: string | null; font: string | null; image: string | null};
 };
 
 const Artwork = ({scene, accent, frame, language}: {scene: PlannedScene; accent: string; frame: number; language: BriefingProposal['language']}) => {
@@ -44,8 +45,9 @@ const Artwork = ({scene, accent, frame, language}: {scene: PlannedScene; accent:
   </div>;
 };
 
-const Scene = ({scene: fallback, storyboard, profile, purpose, language, resources}: Props) => {
+const Scene = ({scene: fallback, storyboard, captions, profile, purpose, language, resources}: Props) => {
   const frame = useCurrentFrame();
+  const activeCaption = captions.find((caption) => frame >= caption.startFrame && frame < caption.endFrame);
   const [ready] = useState(() => delayRender('Required scene font', {timeoutInMilliseconds: 20_000}));
   useEffect(() => {
     let active = true;
@@ -74,10 +76,13 @@ const Scene = ({scene: fallback, storyboard, profile, purpose, language, resourc
     </div>
     <h1 style={{fontFamily: headingFontFamily(profile.typography.heading, Boolean(resources.font)), fontSize: 76, lineHeight: 1.06, fontWeight: 700, overflowWrap: 'anywhere', margin: '40px 0 0', opacity: entrance, transform}}>{planned.composition.headline}</h1>
     {planned.composition.supportingText && <p style={{fontSize: 34, lineHeight: 1.3, maxWidth: 850, marginTop: 24, opacity: entrance}}>{planned.composition.supportingText}</p>}
+    {activeCaption && <div style={{position: 'absolute', left: 90, right: 90, bottom: 100, display: 'flex', justifyContent: 'center', pointerEvents: 'none'}}>
+      <span style={{maxWidth: 900, padding: '12px 22px', borderRadius: 12, backgroundColor: 'rgba(0, 0, 0, 0.82)', color: '#ffffff', fontSize: 34, fontWeight: 700, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'anywhere'}}>{activeCaption.text}</span>
+    </div>}
     {resources.audio && <Audio src={staticFile(resources.audio)}/>}
   </AbsoluteFill>;
 };
 
 const fallbackProfile: BriefingProposal['profile'] = {id: 'fallback', name: 'Local motion study', typography: {heading: 'Arial', body: 'Arial'}, colors: {background: '#f4f0e8', foreground: '#17202e', accent: '#245bcc'}, voicePreference: 'Imported audio', motionLanguage: 'Deterministic frame motion'};
-const defaults: Props = {scene: {id: 'scene-001', title: 'Local scene', background: '#f4f0e8', accent: '#245bcc', font: null, image: null, startFrame: 0, endFrame: 30}, storyboard: [], profile: fallbackProfile, purpose: 'channel', language: 'pt-BR', durationInFrames: 30, resources: {audio: null, font: null, image: null}};
+const defaults: Props = {scene: {id: 'scene-001', title: 'Local scene', background: '#f4f0e8', accent: '#245bcc', font: null, image: null, startFrame: 0, endFrame: 30}, storyboard: [], captions: [], profile: fallbackProfile, purpose: 'channel', language: 'pt-BR', durationInFrames: 30, resources: {audio: null, font: null, image: null}};
 registerRoot(() => <Composition id="LocalScene" component={Scene} width={1080} height={1920} fps={30} durationInFrames={30} defaultProps={defaults} calculateMetadata={({props}) => ({durationInFrames: props.durationInFrames})}/>);

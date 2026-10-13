@@ -67,10 +67,10 @@ function simpleBriefingFixture() {
   };
 }
 
-function fixture() {
+function fixture(targetDuration?: string) {
   const root = mkdtempSync(join(tmpdir(), 'grimoire-media-'));
   const run = join(root, 'run');
-  json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free']));
+  json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free', ...(targetDuration ? ['--target-duration', targetDuration] : [])]));
   const briefing = join(root, 'briefing.json');
   writeFileSync(briefing, JSON.stringify(simpleBriefingFixture()));
   json(cli(['import-briefing', run, '--briefing', briefing]));
@@ -202,11 +202,12 @@ test('briefing approval becomes stale after the proposal changes and legacy runs
 });
 
 test('replacing narration clears incompatible imported audio and its derived artifacts', () => {
-  const f = fixture();
+  const f = fixture('0.5');
   try {
     const importedAudio = json(cli(importArgs(f)));
     approve(f.run, 'audio');
     assert.ok(importedAudio.audio);
+    assert.equal(importedAudio.durationAssessment.status, 'over_target');
     const proposal = simpleBriefingFixture() as any;
     proposal.narration[0].text = 'Revised clean narration for a new recording';
     writeFileSync(f.briefing, JSON.stringify(proposal));
@@ -215,6 +216,7 @@ test('replacing narration clears incompatible imported audio and its derived art
     const status = json(cli(['status', f.run]));
     assert.equal(status.briefing.proposal.narration[0].text, proposal.narration[0].text);
     assert.equal(status.audio, null);
+    assert.equal(status.durationAssessment, null);
     assert.equal(status.artifacts.preview, null);
     assert.equal(status.artifacts.final, null);
     assert.equal(status.artifacts.report, null);
@@ -428,6 +430,44 @@ test('invalid licensing metadata fails explicitly before accepting imported audi
     assert.ok(m.blocker);
     assert.equal(m.audio, null);
   } finally {rmSync(f.root, {recursive: true, force: true});}
+});
+
+test('public production syncs captions to supplied speech timing and warns when measured speech exceeds its target', {timeout: 180_000}, () => {
+  const root = mkdtempSync(join(tmpdir(), 'grimoire-captions-'));
+  try {
+    const run = join(root, 'run');
+    json(cli(['init', run, '--title', 'Uma cena em movimento', '--license', 'free', '--target-duration', '0.5']));
+    const briefing = join(root, 'briefing.json');
+    const proposal = simpleBriefingFixture() as any;
+    proposal.narration[0].text = 'A fala acompanha o movimento do céu.';
+    proposal.storyboard[0].composition.headline = 'O céu em movimento';
+    writeFileSync(briefing, JSON.stringify(proposal));
+    json(cli(['import-briefing', run, '--briefing', briefing]));
+
+    const audio = join(root, 'voice.wav');
+    const generated = spawnSync(ffmpeg!, ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-ar', '48000', audio], {encoding: 'utf8'});
+    assert.equal(generated.status, 0, generated.stderr);
+    const alignment = join(root, 'alignment.json');
+    writeFileSync(alignment, JSON.stringify({provenance: 'supplied', segments: [
+      {id: 'line-001', text: proposal.narration[0].text, start: 0.13, end: 0.62},
+    ]}));
+    const args = ['import-audio', run, '--audio', audio, '--alignment', alignment, '--origin', 'Generated local test media', '--audio-license', 'CC0'];
+    const imported = json(cli(args));
+    assert.equal(imported.audio.alignment.provenance, 'supplied');
+    assert.ok(imported.audio.duration >= 1 && imported.audio.duration < 1.1);
+    assert.match(imported.progress.at(-1).detail, /target|targeted|shorten|re-record/i);
+    assert.match(imported.progress.at(-1).detail, /not accelerated|without speeding|not speed/i);
+    assert.ok(imported.artifacts.captions);
+    const captionsPath = join(run, imported.artifacts.captions.path);
+    const captions = readFileSync(captionsPath, 'utf8');
+    assert.match(captions, /00:00:00\.130 --> 00:00:00\.620/);
+    assert.match(captions, /A fala acompanha o movimento do céu\./);
+
+    json(cli(['frame', run, '--frame', '3', '--output', 'review/caption-active.png']));
+    json(cli(['frame', run, '--frame', '19', '--output', 'review/caption-inactive.png']));
+    const captionBand = (file: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, file), '-vf', 'crop=900:150:90:1750', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 150 * 3}).stdout;
+    assert.notDeepEqual(captionBand('review/caption-active.png'), captionBand('review/caption-inactive.png'), 'the active caption must be burned into its aligned frame interval');
+  } finally {rmSync(root, {recursive: true, force: true});}
 });
 
 test('alignment and scene duration follow decoded audio when the video container is longer', () => {

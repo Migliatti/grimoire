@@ -69,12 +69,13 @@ export async function execute(command: string, run: string, options: Options) {
       const title = options.title;
       const m = manifestSchema.parse({schemaVersion: 1, id: randomUUID(), revision: 1, title,
         language: options.language ?? 'pt-BR', purpose: options.purpose ?? 'channel', remotionLicense: options.license,
+        durationTargetSeconds: options['target-duration'] === undefined ? null : Number(options['target-duration']), durationAssessment: null,
         briefing: null,
         format: {width: 1080, height: 1920, fps: 30},
         assetRights: options.font || options.image ? {origin: options['asset-origin'], license: options['asset-license'], attribution: options.attribution ?? ''} : null,
         scene: {id: 'scene-001', title, background: '#f4f0e8', accent: '#245bcc', font: null, image: null, startFrame: 0, endFrame: 30},
         audio: null, budgets: {narration: {paidEnabled: false, limit: 0, actual: 0}, visuals: {paidEnabled: false, limit: 0, actual: 0}},
-        previewSourceHash: null, approvals: [], artifacts: {preview: null, final: null, report: null}, status: 'pending', progress: [], blocker: null,
+        previewSourceHash: null, approvals: [], artifacts: {preview: null, final: null, report: null, captions: null}, status: 'pending', progress: [], blocker: null,
       });
       for (const dir of ['input', 'intermediate', 'preview', 'review', 'final', 'cached']) mkdirSync(join(root, dir));
       for (const key of ['font', 'image'] as const) {
@@ -147,8 +148,11 @@ function importBriefing(root: string, manifest: Manifest, options: Options) {
     catch {importedAudioStillMatches = false;}
   }
   manifest.briefing = {proposal, artifact: artifact(root, path, `briefing-${hash.slice(0, 16)}`)};
-  if (!importedAudioStillMatches) manifest.audio = null;
-  manifest.artifacts = {preview: null, final: null, report: null};
+  if (!importedAudioStillMatches) {
+    manifest.audio = null;
+    manifest.durationAssessment = null;
+  }
+  manifest.artifacts = {preview: null, final: null, report: null, captions: null};
   manifest.previewSourceHash = null;
   progress(root, manifest, 'import-briefing', 'awaiting_review', 'Structured briefing imported; script and direction review required');
 }
