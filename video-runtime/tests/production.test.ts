@@ -282,7 +282,16 @@ test('public workflow renders an approved multi-scene briefing against imported 
   try {
     const run = join(root, 'run');
     json(cli(['init', run, '--title', 'O universo tem um centro?', '--license', 'free']));
-    const briefing = join(root, 'briefing.json'); writeFileSync(briefing, JSON.stringify(briefingFixture()));
+    const proposal = briefingFixture();
+    proposal.storyboard.forEach((scene, index) => {
+      scene.movement.style = 'hold';
+      scene.transition.type = 'cut';
+      Object.assign(scene.composition, {
+        template: 'data',
+        data: [{id: `point-${index + 1}`, label: scene.purpose, value: index + 1, unit: 'x', sourceIds: ['source-001']}],
+      });
+    });
+    const briefing = join(root, 'briefing.json'); writeFileSync(briefing, JSON.stringify(proposal));
     json(cli(['import-briefing', run, '--briefing', briefing]));
     const audio = join(root, 'voice.wav');
     const generated = spawnSync(ffmpeg!, ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-ar', '48000', audio], {encoding: 'utf8'});
@@ -306,14 +315,16 @@ test('public workflow renders an approved multi-scene briefing against imported 
     }
     const result = JSON.parse(rendered.stdout);
     assert.equal(result.status, 'validated');
-    json(cli(['frame', run, '--frame', '5', '--output', 'review/story-first.png']));
-    json(cli(['frame', run, '--frame', '20', '--output', 'review/story-second.png']));
+    for (const frame of [5, 11, 12, 20]) json(cli(['frame', run, '--frame', String(frame), '--output', `review/story-frame-${frame}.png`]));
     const pixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 1080 * 1920 * 4}).stdout;
-    assert.notDeepEqual(pixels('review/story-first.png'), pixels('review/story-second.png'));
+    const artworkPixels = (relative: string) => spawnSync(ffmpeg!, ['-v', 'error', '-i', join(run, relative), '-vf', 'crop=900:470:90:260', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], {maxBuffer: 900 * 470 * 3}).stdout;
+    assert.deepEqual(pixels('review/story-frame-5.png'), pixels('review/story-frame-11.png'), 'the first scene includes frames before its exclusive end');
+    assert.deepEqual(pixels('review/story-frame-12.png'), pixels('review/story-frame-20.png'), 'the second scene begins inclusively at frame 12');
+    assert.notDeepEqual(artworkPixels('review/story-frame-11.png'), artworkPixels('review/story-frame-12.png'), 'scene artwork changes exactly at frame 12');
     if (process.env.GRIMOIRE_VIDEO_REVIEW_DIR) {
       mkdirSync(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, {recursive: true});
-      copyFileSync(join(run, 'review/story-first.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
-      copyFileSync(join(run, 'review/story-second.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
+      copyFileSync(join(run, 'review/story-frame-5.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-first.png'));
+      copyFileSync(join(run, 'review/story-frame-12.png'), join(process.env.GRIMOIRE_VIDEO_REVIEW_DIR, 'story-second.png'));
     }
   } finally {rmSync(root, {recursive: true, force: true});}
 });
