@@ -1,0 +1,12 @@
+test_cache_and_repair_isolation (test_pipeline.PipelineTests.test_cache_and_repair_isolation) ... ok
+test_deterministic_out_of_order_frames (test_pipeline.PipelineTests.test_deterministic_out_of_order_frames) ... ok
+test_existing_real_audio_and_cues (test_pipeline.PipelineTests.test_existing_real_audio_and_cues) ... ok
+test_install_to_isolated_codex_home (test_pipeline.PipelineTests.test_install_to_isolated_codex_home) ... ok
+test_missing_source_rejected (test_pipeline.PipelineTests.test_missing_source_rejected) ... ok
+test_unreviewed_research_rejected (test_pipeline.PipelineTests.test_unreviewed_research_rejected) ... ok
+test_visual_instruction_in_speech_rejected (test_pipeline.PipelineTests.test_visual_instruction_in_speech_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.988s
+
+OK

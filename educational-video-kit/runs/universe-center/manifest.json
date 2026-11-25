@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "topic": "O universo tem um centro?",
+  "language": "pt-BR",
+  "target_duration": 60,
+  "duration_tolerance": 8,
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "safe_margin": {
+      "top": 96,
+      "right": 90,
+      "bottom": 220,
+      "left": 90
+    }
+  },
+  "research": {
+    "reviewed": true,
+    "reviewer": "Codex; fontes primárias lidas em 2026-10-12"
+  },
+  "sources": [
+    {
+      "id": "nasa-webb",
+      "title": "NASA — Webb Telescope & The Big Bang",
+      "url": "https://science.nasa.gov/mission/webb/big-bang-q-and-a/",
+      "accessed": "2026-10-12",
+      "supports": "Ausência de centro da expansão e Big Bang em toda parte; não usamos a afirmação de infinitude desta entrevista como fato demonstrado."
+    },
+    {
+      "id": "nasa-expansion",
+      "title": "NASA — Cosmic Times: Expanding Universe",
+      "url": "https://imagine.gsfc.nasa.gov/educators/programs/cosmictimes/educators/guide/1929/expanding.html",
+      "accessed": "2026-10-12",
+      "supports": "Expansão acontece em toda parte. Observador não ocupa centro privilegiado; grade é uma analogia plana."
+    },
+    {
+      "id": "nasa-glossary",
+      "title": "NASA — Universe glossary",
+      "url": "https://science.nasa.gov/universe/glossary/",
+      "accessed": "2026-10-12",
+      "supports": "Princípio cosmológico e universo observável: distribuição homogênea em grandes escalas; região acessível pela luz, relativa ao observador."
+    },
+    {
+      "id": "nasa-size",
+      "title": "NASA — Ask an Astrophysicist, question 070320a",
+      "url": "https://imagine.gsfc.nasa.gov/ask_astro/cosmology.html",
+      "accessed": "2026-10-12",
+      "supports": "A resposta 070320a afirma explicitamente que não sabemos se o volume total é infinito; outras respostas históricas da página têm simplificações e valores desatualizados e não foram usados."
+    }
+  ],
+  "scenes": [
+    {
+      "id": "question",
+      "title": "O universo tem um centro?",
+      "claim": "No modelo cosmológico padrão não há centro espacial privilegiado.",
+      "epistemic": "model",
+      "visual_kind": "illustration",
+      "template": "comparison",
+      "takeaway": "Sem um ponto privilegiado",
+      "narration": [
+        "O universo tem um centro?",
+        "Pelo modelo cosmológico padrão, não existe um lugar especial de onde tudo se afasta."
+      ],
+      "sources": [
+        "nasa-webb"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "?",
+      "start": 0.0,
+      "end": 8.007074829931973,
+      "frame_key": "5f80b4545817d873ec484b684298ebb1602b864cf5091188796edc9716246ee6"
+    },
+    {
+      "id": "big-bang",
+      "title": "O Big Bang não foi uma bomba",
+      "claim": "O Big Bang descreve a evolução de um estado quente e denso, não uma explosão em espaço vazio.",
+      "epistemic": "established",
+      "visual_kind": "illustration",
+      "template": "expansion",
+      "takeaway": "O próprio espaço se expande",
+      "narration": [
+        "O Big Bang não foi uma bomba explodindo num espaço vazio.",
+        "Ele descreve um universo que era muito mais quente e denso.",
+        "Desde então, o próprio espaço se expande."
+      ],
+      "sources": [
+        "nasa-webb"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "∞ ?",
+      "start": 8.007074829931973,
+      "end": 18.502585034013606,
+      "frame_key": "59c5efa9fae7b95e4d68ae5d8b98cb28e583c7c6c466b17faf191b4eee8847b6"
+    },
+    {
+      "id": "grid",
+      "title": "Imagine uma grade elástica",
+      "claim": "Grade plana ilustra expansão uniforme; não determina geometria ou borda reais.",
+      "epistemic": "analogy",
+      "visual_kind": "analogy",
+      "template": "expansion",
+      "takeaway": "A grade é uma analogia",
+      "narration": [
+        "Imagine pontos numa grade elástica.",
+        "Quando a grade cresce, as distâncias entre os pontos aumentam.",
+        "A grade é só uma analogia: suas bordas não são bordas do universo."
+      ],
+      "sources": [
+        "nasa-expansion"
+      ],
+      "source_label": "NASA · Expansão em toda parte",
+      "diagram_label": "∞ ?",
+      "start": 18.502585034013606,
+      "end": 29.8572335600907,
+      "frame_key": "f47694c3c71056c918fae51f867d0a8c9dfe88b7101a1db708b1f459dcc4d1bb"
+    },
+    {
+      "id": "observers",
+      "title": "Mude o ponto de observação",
+      "claim": "Na expansão homogênea qualquer observador comóvel vê outros pontos se afastarem.",
+      "epistemic": "model",
+      "visual_kind": "illustration",
+      "template": "observers",
+      "takeaway": "O efeito não escolhe um centro",
+      "narration": [
+        "Escolha outro ponto para observar.",
+        "Ele também verá os demais se afastando.",
+        "Esse efeito não escolhe um centro."
+      ],
+      "sources": [
+        "nasa-expansion"
+      ],
+      "source_label": "NASA · Cosmic Times",
+      "diagram_label": "∞ ?",
+      "start": 29.8572335600907,
+      "end": 37.264489795918365,
+      "frame_key": "8257c03ff6967ee398b6f6a3eb5c85338db2dce3c4cb6667e408cbed33d907f3"
+    },
+    {
+      "id": "observable",
+      "title": "Um centro da nossa visão",
+      "claim": "Nossa região observável é centrada em nós por definição, não é centro do universo total.",
+      "epistemic": "established",
+      "visual_kind": "illustration",
+      "template": "horizon",
+      "takeaway": "Centro da visão ≠ centro do cosmos",
+      "narration": [
+        "Mas há uma diferença importante.",
+        "Estamos no centro da região que conseguimos observar.",
+        "Isso acontece porque a luz leva tempo para chegar até nós."
+      ],
+      "sources": [
+        "nasa-glossary"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "∞ ?",
+      "start": 37.264489795918365,
+      "end": 46.7847619047619,
+      "frame_key": "ccb8e1cdb85fade2fae173d1ad3240f6f6504463747a1ff7af4c1d9da579067a"
+    },
+    {
+      "id": "limits",
+      "title": "O que ainda não sabemos",
+      "claim": "Não conhecemos tamanho e topologia globais; infinitude não demonstrada.",
+      "epistemic": "unknown",
+      "visual_kind": "illustration",
+      "template": "comparison",
+      "takeaway": "Não sabemos se o universo é infinito",
+      "narration": [
+        "Outro observador teria sua própria região observável.",
+        "Não conhecemos o tamanho total do universo, nem sabemos se ele é infinito.",
+        "Centro da nossa visão não significa centro do cosmos."
+      ],
+      "sources": [
+        "nasa-size",
+        "nasa-glossary"
+      ],
+      "source_label": "NASA · Ask an Astrophysicist",
+      "diagram_label": "∞ ?",
+      "start": 46.7847619047619,
+      "end": 59.590658,
+      "frame_key": "7fea0a75450b0b3243dcc3f6885f3393b08319d1b3f6138c2335561ea61dfc5a"
+    }
+  ],
+  "voice": {
+    "provider": "piper",
+    "model": "models/pt_BR-faber-medium.onnx",
+    "length_scale": 1.45,
+    "pause": 0.12
+  },
+  "timestamps": [
+    {
+      "scene": "question",
+      "text": "O universo tem um centro?",
+      "start": 0.0,
+      "end": 2.043356009070295,
+      "file": "work/audio/f1eb8251545e92cf3bf8c5bb3cf12625af974759e19e770f62813514b8bcf7e6.wav"
+    },
+    {
+      "scene": "question",
+      "text": "Pelo modelo cosmológico padrão, não existe um lugar especial de onde tudo se afasta.",
+      "start": 2.163356009070295,
+      "end": 7.887074829931973,
+      "file": "work/audio/d410795285ba7bbaab749545315feaf801abeeaeb07be44f99e1a0dac6d6958f.wav"
+    },
+    {
+      "scene": "big-bang",
+      "text": "O Big Bang não foi uma bomba explodindo num espaço vazio.",
+      "start": 8.007074829931973,
+      "end": 11.524897959183674,
+      "file": "work/audio/c7157e90e0d0d03b2f2838fc523bae40c771313ec7689a8d5e5738960a44d36f.wav"
+    },
+    {
+      "scene": "big-bang",
+      "text": "Ele descreve um universo que era muito mais quente e denso.",
+      "start": 11.644897959183673,
+      "end": 15.360090702947845,
+      "file": "work/audio/4bbd8f0d4a187b23bc81bad716737ba3d459a02828aa7cfa7e544586b4c4386b.wav"
+    },
+    {
+      "scene": "big-bang",
+      "text": "Desde então, o próprio espaço se expande.",
+      "start": 15.480090702947846,
+      "end": 18.382585034013605,
+      "file": "work/audio/30c08cdcc5605d8217725eb24ca613deab6d4df6096b836c6ca5dce245b1910b.wav"
+    },
+    {
+      "scene": "grid",
+      "text": "Imagine pontos numa grade elástica.",
+      "start": 18.502585034013606,
+      "end": 20.998730158730158,
+      "file": "work/audio/7df4dcb773d153f42e07151b0b82feed85f41ab4776fd7259971803c41973482.wav"
+    },
+    {
+      "scene": "grid",
+      "text": "Quando a grade cresce, as distâncias entre os pontos aumentam.",
+      "start": 21.11873015873016,
+      "end": 25.159002267573698,
+      "file": "work/audio/bab91fe0bc07e248cb30e4b7c47e087d6cb6ddf5b78b7f4275e0fe57e85916f8.wav"
+    },
+    {
+      "scene": "grid",
+      "text": "A grade é só uma analogia: suas bordas não são bordas do universo.",
+      "start": 25.279002267573695,
+      "end": 29.7372335600907,
+      "file": "work/audio/f5186bb5809b3a9b8d7f68c3c4172e98d9efb05159ee0c1de4f9009ca098740c.wav"
+    },
+    {
+      "scene": "observers",
+      "text": "Escolha outro ponto para observar.",
+      "start": 29.8572335600907,
+      "end": 31.923809523809524,
+      "file": "work/audio/85d140eda9188b3a2cb654c5582e12256527106f58a6676e61a6527595c07762.wav"
+    },
+    {
+      "scene": "observers",
+      "text": "Ele também verá os demais se afastando.",
+      "start": 32.04380952380952,
+      "end": 34.74893424036281,
+      "file": "work/audio/88d919250a5adfbeffcc3c6456756359a28d344851e34a6331d7ffc873bb8fff.wav"
+    },
+    {
+      "scene": "observers",
+      "text": "Esse efeito não escolhe um centro.",
+      "start": 34.86893424036281,
+      "end": 37.14448979591837,
+      "file": "work/audio/d7fa4730ca1e308071dacb6c58e43a450c77d5e619000300cf802314a1182749.wav"
+    },
+    {
+      "scene": "observable",
+      "text": "Mas há uma diferença importante.",
+      "start": 37.264489795918365,
+      "end": 39.21496598639455,
+      "file": "work/audio/6beeaead5f17646e336833f94bf3b56e57b326d75fa73e445f96cf4484c37ec5.wav"
+    },
+    {
+      "scene": "observable",
+      "text": "Estamos no centro da região que conseguimos observar.",
+      "start": 39.33496598639456,
+      "end": 42.608979591836736,
+      "file": "work/audio/cda9fac80ae3d523ab8065af919b2106d0680d24f4ee7ee18ad6e29635c66441.wav"
+    },
+    {
+      "scene": "observable",
+      "text": "Isso acontece porque a luz leva tempo para chegar até nós.",
+      "start": 42.72897959183673,
+      "end": 46.6647619047619,
+      "file": "work/audio/b2ed1b2dd2b7d63e076b0942d74b090d717df6d479fbab48c05d1d17b2561c9f.wav"
+    },
+    {
+      "scene": "limits",
+      "text": "Outro observador teria sua própria região observável.",
+      "start": 46.7847619047619,
+      "end": 49.9891156462585,
+      "file": "work/audio/26c981c71567792a42b4c065a5ce35c6b55d5babb8152433a246c093478af361.wav"
+    },
+    {
+      "scene": "limits",
+      "text": "Não conhecemos o tamanho total do universo, nem sabemos se ele é infinito.",
+      "start": 50.1091156462585,
+      "end": 55.63546485260771,
+      "file": "work/audio/2a282730b47223c9736dca33919608e28c912c4e4893ce467d9e586476da68ab.wav"
+    },
+    {
+      "scene": "limits",
+      "text": "Centro da nossa visão não significa centro do cosmos.",
+      "start": 55.75546485260771,
+      "end": 59.47065759637188,
+      "file": "work/audio/09209ba2710f5eae2b90586419fde0f68830ddb3f499c4a66090a56f3e5d1c19.wav"
+    }
+  ],
+  "files": {
+    "audio": "work/audio/narration.wav",
+    "audio_sha256": "f387f0d172a1d90b042d44b88975305cfd14d1649729dbdb04aa29eff760598c",
+    "captions": "final/captions.srt",
+    "frames": "work/sequence",
+    "video": "final/video.mp4",
+    "video_sha256": "4b8a9e8a2cb689f178d19579f5324a7161fbe580d079b5d4f2d611118c6face2",
+    "encode_key": "cd55dde153e9fc5fabb964a9d83144a27f6d6377da0ae782b20baf7cdb4c6b3c",
+    "voice_input_key": "5ac778aa9bf732ff59be81456e38160b07822e3dc6fbf8b9774b695553130f69",
+    "captions_sha256": "493c5be3bbfe5cd4a37a2d6958494924f59cf4b8beb951e1898309c0059aaa8f"
+  },
+  "status": {
+    "research": "validated",
+    "narration": "validated",
+    "render": "validated",
+    "encode": "validated",
+    "validate": "running",
+    "validation": "technical_passed"
+  },
+  "duration": 59.590658,
+  "frame_count": 1788,
+  "review": {
+    "status": "reviewed_with_limitations",
+    "video_sha256": "4b8a9e8a2cb689f178d19579f5324a7161fbe580d079b5d4f2d611118c6face2",
+    "visual": "beginning, middle and end inspected from final MP4",
+    "audio": "Whisper small recognition by scene + measured cues + decoded AAC/WAV correlation",
+    "human_listening": false,
+    "limitations": [
+      "Chunk-level captions, not word alignment",
+      "Voice expressive quality not evaluated by human listening"
+    ],
+    "reviewer": "Codex",
+    "date": "2026-10-12"
+  }
+}

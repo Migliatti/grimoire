@@ -1,4 +1,6 @@
 .worktrees/
 .superpowers/
+.scratch/
+.grimoire/
 __pycache__/
 *.pyc

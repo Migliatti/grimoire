@@ -1,0 +1,10 @@
+.venv/
+.browsers/
+node_modules/
+models/
+runs/*/work/
+*.lock
+.env
+__pycache__/
+runs/*/final/
+runs/*/review/*.png

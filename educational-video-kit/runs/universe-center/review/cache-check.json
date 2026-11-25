@@ -1,0 +1,24 @@
+{
+  "operation": "render --scene grid after source_label edit",
+  "before": [
+    "c3403439",
+    "563a371e",
+    "132452cd",
+    "6befd980",
+    "3d0b132a",
+    "e0c9fc1b"
+  ],
+  "after": [
+    "c3403439",
+    "563a371e",
+    "5960b22e",
+    "6befd980",
+    "3d0b132a",
+    "e0c9fc1b"
+  ],
+  "changed": [
+    "grid"
+  ],
+  "audio_sha256": "f387f0d172a1d90b042d44b88975305cfd14d1649729dbdb04aa29eff760598c",
+  "result": "only grid recaptured; five other scenes preserved"
+}

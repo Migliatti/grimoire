@@ -1,0 +1,31 @@
+{
+  "technical": "passed",
+  "duration": 59.590658,
+  "video_duration": 59.6,
+  "audio_duration": 59.59102,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "fps": 30.0,
+  "rms_dbfs": -14.989641690668762,
+  "clipping_fraction": 1.2937851129474403e-05,
+  "full_decode": "passed",
+  "subtitle_stream": "mov_text + burned-in",
+  "sync": "measured chunk boundaries; not word alignment",
+  "editorial_review": {
+    "status": "reviewed_with_limitations",
+    "video_sha256": "4b8a9e8a2cb689f178d19579f5324a7161fbe580d079b5d4f2d611118c6face2",
+    "visual": "beginning, middle and end inspected from final MP4",
+    "audio": "Whisper small recognition by scene + measured cues + decoded AAC/WAV correlation",
+    "human_listening": false,
+    "limitations": [
+      "Chunk-level captions, not word alignment",
+      "Voice expressive quality not evaluated by human listening"
+    ],
+    "reviewer": "Codex",
+    "date": "2026-10-12"
+  },
+  "sha256": "4b8a9e8a2cb689f178d19579f5324a7161fbe580d079b5d4f2d611118c6face2",
+  "encoded_audio_correlation": 0.9997998064114313
+}

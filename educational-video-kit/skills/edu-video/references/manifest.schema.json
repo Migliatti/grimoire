@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "version",
+    "topic",
+    "language",
+    "target_duration",
+    "format",
+    "research",
+    "sources",
+    "scenes",
+    "voice",
+    "status",
+    "files",
+    "timestamps"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "topic": {
+      "type": "string",
+      "minLength": 1
+    },
+    "language": {
+      "enum": [
+        "pt-BR",
+        "en"
+      ]
+    },
+    "target_duration": {
+      "type": "number",
+      "minimum": 5
+    },
+    "format": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "fps",
+        "safe_margin"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 320,
+          "multipleOf": 2
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 320,
+          "multipleOf": 2
+        },
+        "fps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "safe_margin": {
+          "type": "object",
+          "required": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "properties": {
+            "top": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "right": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bottom": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "left": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "research": {
+      "type": "object",
+      "required": [
+        "reviewed",
+        "reviewer"
+      ],
+      "properties": {
+        "reviewed": {
+          "type": "boolean"
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "url",
+          "accessed",
+          "supports"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accessed": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supports": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "claim",
+          "epistemic",
+          "visual_kind",
+          "narration",
+          "sources",
+          "template",
+          "takeaway"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "epistemic": {
+            "enum": [
+              "established",
+              "model",
+              "hypothesis",
+              "analogy",
+              "unknown"
+            ]
+          },
+          "visual_kind": {
+            "enum": [
+              "illustration",
+              "simulation",
+              "analogy",
+              "observational"
+            ]
+          },
+          "narration": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "template": {
+            "enum": [
+              "expansion",
+              "observers",
+              "horizon",
+              "comparison",
+              "bullets",
+              "bars",
+              "timeline",
+              "custom"
+            ]
+          },
+          "takeaway": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "required": [
+        "provider"
+      ],
+      "properties": {
+        "provider": {
+          "enum": [
+            "piper",
+            "existing",
+            "command"
+          ]
+        }
+      }
+    },
+    "timestamps": {
+      "type": "array"
+    },
+    "files": {
+      "type": "object"
+    },
+    "status": {
+      "type": "object"
+    }
+  }
+}

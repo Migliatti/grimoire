@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ffprobe-installer/darwin-arm64": "^5.0.1"
+  }
+}

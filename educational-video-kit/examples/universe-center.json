@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "topic": "O universo tem um centro?",
+  "language": "pt-BR",
+  "target_duration": 60,
+  "duration_tolerance": 8,
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "safe_margin": {
+      "top": 96,
+      "right": 90,
+      "bottom": 220,
+      "left": 90
+    }
+  },
+  "research": {
+    "reviewed": true,
+    "reviewer": "Codex; fontes primárias lidas em 2026-10-12"
+  },
+  "sources": [
+    {
+      "id": "nasa-webb",
+      "title": "NASA — Webb Telescope & The Big Bang",
+      "url": "https://science.nasa.gov/mission/webb/big-bang-q-and-a/",
+      "accessed": "2026-10-12",
+      "supports": "Ausência de centro da expansão e Big Bang em toda parte; não usamos a afirmação de infinitude desta entrevista como fato demonstrado."
+    },
+    {
+      "id": "nasa-expansion",
+      "title": "NASA — Cosmic Times: Expanding Universe",
+      "url": "https://imagine.gsfc.nasa.gov/educators/programs/cosmictimes/educators/guide/1929/expanding.html",
+      "accessed": "2026-10-12",
+      "supports": "Expansão acontece em toda parte. Observador não ocupa centro privilegiado; grade é uma analogia plana."
+    },
+    {
+      "id": "nasa-glossary",
+      "title": "NASA — Universe glossary",
+      "url": "https://science.nasa.gov/universe/glossary/",
+      "accessed": "2026-10-12",
+      "supports": "Princípio cosmológico e universo observável: distribuição homogênea em grandes escalas; região acessível pela luz, relativa ao observador."
+    },
+    {
+      "id": "nasa-size",
+      "title": "NASA — Ask an Astrophysicist, question 070320a",
+      "url": "https://imagine.gsfc.nasa.gov/ask_astro/cosmology.html",
+      "accessed": "2026-10-12",
+      "supports": "A resposta 070320a afirma explicitamente que não sabemos se o volume total é infinito; outras respostas históricas da página têm simplificações e valores desatualizados e não foram usados."
+    }
+  ],
+  "scenes": [
+    {
+      "id": "question",
+      "title": "O universo tem um centro?",
+      "claim": "No modelo cosmológico padrão não há centro espacial privilegiado.",
+      "epistemic": "model",
+      "visual_kind": "illustration",
+      "template": "comparison",
+      "takeaway": "Sem um ponto privilegiado",
+      "narration": [
+        "O universo tem um centro?",
+        "Pelo modelo cosmológico padrão, não existe um lugar especial de onde tudo se afasta."
+      ],
+      "sources": [
+        "nasa-webb"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "?"
+    },
+    {
+      "id": "big-bang",
+      "title": "O Big Bang não foi uma bomba",
+      "claim": "O Big Bang descreve a evolução de um estado quente e denso, não uma explosão em espaço vazio.",
+      "epistemic": "established",
+      "visual_kind": "illustration",
+      "template": "expansion",
+      "takeaway": "O próprio espaço se expande",
+      "narration": [
+        "O Big Bang não foi uma bomba explodindo num espaço vazio.",
+        "Ele descreve um universo que era muito mais quente e denso.",
+        "Desde então, o próprio espaço se expande."
+      ],
+      "sources": [
+        "nasa-webb"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "∞ ?"
+    },
+    {
+      "id": "grid",
+      "title": "Imagine uma grade elástica",
+      "claim": "Grade plana ilustra expansão uniforme; não determina geometria ou borda reais.",
+      "epistemic": "analogy",
+      "visual_kind": "analogy",
+      "template": "expansion",
+      "takeaway": "A grade é uma analogia",
+      "narration": [
+        "Imagine pontos numa grade elástica.",
+        "Quando a grade cresce, as distâncias entre os pontos aumentam.",
+        "A grade é só uma analogia: suas bordas não são bordas do universo."
+      ],
+      "sources": [
+        "nasa-expansion"
+      ],
+      "source_label": "NASA · Expansão em toda parte",
+      "diagram_label": "∞ ?"
+    },
+    {
+      "id": "observers",
+      "title": "Mude o ponto de observação",
+      "claim": "Na expansão homogênea qualquer observador comóvel vê outros pontos se afastarem.",
+      "epistemic": "model",
+      "visual_kind": "illustration",
+      "template": "observers",
+      "takeaway": "O efeito não escolhe um centro",
+      "narration": [
+        "Escolha outro ponto para observar.",
+        "Ele também verá os demais se afastando.",
+        "Esse efeito não escolhe um centro."
+      ],
+      "sources": [
+        "nasa-expansion"
+      ],
+      "source_label": "NASA · Cosmic Times",
+      "diagram_label": "∞ ?"
+    },
+    {
+      "id": "observable",
+      "title": "Um centro da nossa visão",
+      "claim": "Nossa região observável é centrada em nós por definição, não é centro do universo total.",
+      "epistemic": "established",
+      "visual_kind": "illustration",
+      "template": "horizon",
+      "takeaway": "Centro da visão ≠ centro do cosmos",
+      "narration": [
+        "Mas há uma diferença importante.",
+        "Estamos no centro da região que conseguimos observar.",
+        "Isso acontece porque a luz leva tempo para chegar até nós."
+      ],
+      "sources": [
+        "nasa-glossary"
+      ],
+      "source_label": "NASA · Webb / Glossário",
+      "diagram_label": "∞ ?"
+    },
+    {
+      "id": "limits",
+      "title": "O que ainda não sabemos",
+      "claim": "Não conhecemos tamanho e topologia globais; infinitude não demonstrada.",
+      "epistemic": "unknown",
+      "visual_kind": "illustration",
+      "template": "comparison",
+      "takeaway": "Não sabemos se o universo é infinito",
+      "narration": [
+        "Outro observador teria sua própria região observável.",
+        "Não conhecemos o tamanho total do universo, nem sabemos se ele é infinito.",
+        "Centro da nossa visão não significa centro do cosmos."
+      ],
+      "sources": [
+        "nasa-size",
+        "nasa-glossary"
+      ],
+      "source_label": "NASA · Ask an Astrophysicist",
+      "diagram_label": "∞ ?"
+    }
+  ],
+  "voice": {
+    "provider": "piper",
+    "model": "models/pt_BR-faber-medium.onnx",
+    "length_scale": 1.45,
+    "pause": 0.12
+  },
+  "timestamps": [],
+  "files": {},
+  "status": {}
+}

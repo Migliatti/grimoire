@@ -1,0 +1,6 @@
+piper-tts==1.8.0
+imageio-ffmpeg==0.6.0
+playwright==1.63.0
+jsonschema==4.26.0
+pillow==12.3.0
+pyyaml==6.0.3

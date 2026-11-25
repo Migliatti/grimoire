@@ -1,0 +1,943 @@
+{
+  "video_sha256": "4b8a9e8a2cb689f178d19579f5324a7161fbe580d079b5d4f2d611118c6face2",
+  "audio_sha256": "f387f0d172a1d90b042d44b88975305cfd14d1649729dbdb04aa29eff760598c",
+  "model": "small",
+  "language": "pt",
+  "language_probability": 1,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.24,
+      "text": " O universo tem um centro pelo modelo cosmológico padrão.",
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.14,
+          "text": " O"
+        },
+        {
+          "start": 0.14,
+          "end": 0.54,
+          "text": " universo"
+        },
+        {
+          "start": 0.54,
+          "end": 0.98,
+          "text": " tem"
+        },
+        {
+          "start": 0.98,
+          "end": 1.1,
+          "text": " um"
+        },
+        {
+          "start": 1.1,
+          "end": 1.62,
+          "text": " centro"
+        },
+        {
+          "start": 1.62,
+          "end": 2.3,
+          "text": " pelo"
+        },
+        {
+          "start": 2.3,
+          "end": 2.68,
+          "text": " modelo"
+        },
+        {
+          "start": 2.68,
+          "end": 3.6,
+          "text": " cosmológico"
+        },
+        {
+          "start": 3.6,
+          "end": 4.24,
+          "text": " padrão."
+        }
+      ]
+    },
+    {
+      "start": 4.4,
+      "end": 7.44,
+      "text": " Não existe um lugar especial de onde tudo se afasta.",
+      "words": [
+        {
+          "start": 4.4,
+          "end": 4.64,
+          "text": " Não"
+        },
+        {
+          "start": 4.64,
+          "end": 4.9,
+          "text": " existe"
+        },
+        {
+          "start": 4.9,
+          "end": 5.08,
+          "text": " um"
+        },
+        {
+          "start": 5.08,
+          "end": 5.36,
+          "text": " lugar"
+        },
+        {
+          "start": 5.36,
+          "end": 5.88,
+          "text": " especial"
+        },
+        {
+          "start": 5.88,
+          "end": 6.18,
+          "text": " de"
+        },
+        {
+          "start": 6.18,
+          "end": 6.3,
+          "text": " onde"
+        },
+        {
+          "start": 6.3,
+          "end": 6.66,
+          "text": " tudo"
+        },
+        {
+          "start": 6.66,
+          "end": 6.88,
+          "text": " se"
+        },
+        {
+          "start": 6.88,
+          "end": 7.44,
+          "text": " afasta."
+        }
+      ]
+    },
+    {
+      "start": 7.98,
+      "end": 11.22,
+      "text": " O Big Bang não foi uma bomba explodindo num espaço vazio.",
+      "words": [
+        {
+          "start": 7.98,
+          "end": 8.14,
+          "text": " O"
+        },
+        {
+          "start": 8.14,
+          "end": 8.32,
+          "text": " Big"
+        },
+        {
+          "start": 8.32,
+          "end": 8.6,
+          "text": " Bang"
+        },
+        {
+          "start": 8.6,
+          "end": 8.82,
+          "text": " não"
+        },
+        {
+          "start": 8.82,
+          "end": 8.98,
+          "text": " foi"
+        },
+        {
+          "start": 8.98,
+          "end": 9.14,
+          "text": " uma"
+        },
+        {
+          "start": 9.14,
+          "end": 9.42,
+          "text": " bomba"
+        },
+        {
+          "start": 9.42,
+          "end": 9.94,
+          "text": " explodindo"
+        },
+        {
+          "start": 9.94,
+          "end": 10.12,
+          "text": " num"
+        },
+        {
+          "start": 10.12,
+          "end": 10.54,
+          "text": " espaço"
+        },
+        {
+          "start": 10.54,
+          "end": 11.22,
+          "text": " vazio."
+        }
+      ]
+    },
+    {
+      "start": 11.6,
+      "end": 15.1,
+      "text": " Ele descreve um universo que era muito mais quente e denso.",
+      "words": [
+        {
+          "start": 11.6,
+          "end": 11.84,
+          "text": " Ele"
+        },
+        {
+          "start": 11.84,
+          "end": 12.38,
+          "text": " descreve"
+        },
+        {
+          "start": 12.38,
+          "end": 12.5,
+          "text": " um"
+        },
+        {
+          "start": 12.5,
+          "end": 12.88,
+          "text": " universo"
+        },
+        {
+          "start": 12.88,
+          "end": 13.14,
+          "text": " que"
+        },
+        {
+          "start": 13.14,
+          "end": 13.28,
+          "text": " era"
+        },
+        {
+          "start": 13.28,
+          "end": 13.48,
+          "text": " muito"
+        },
+        {
+          "start": 13.48,
+          "end": 13.86,
+          "text": " mais"
+        },
+        {
+          "start": 13.86,
+          "end": 14.32,
+          "text": " quente"
+        },
+        {
+          "start": 14.32,
+          "end": 14.52,
+          "text": " e"
+        },
+        {
+          "start": 14.52,
+          "end": 15.1,
+          "text": " denso."
+        }
+      ]
+    },
+    {
+      "start": 15.48,
+      "end": 18.18,
+      "text": " Desde então, o próprio espaço se expande.",
+      "words": [
+        {
+          "start": 15.48,
+          "end": 15.64,
+          "text": " Desde"
+        },
+        {
+          "start": 15.64,
+          "end": 15.96,
+          "text": " então,"
+        },
+        {
+          "start": 16.28,
+          "end": 16.36,
+          "text": " o"
+        },
+        {
+          "start": 16.36,
+          "end": 16.64,
+          "text": " próprio"
+        },
+        {
+          "start": 16.64,
+          "end": 17.06,
+          "text": " espaço"
+        },
+        {
+          "start": 17.06,
+          "end": 17.4,
+          "text": " se"
+        },
+        {
+          "start": 17.4,
+          "end": 18.18,
+          "text": " expande."
+        }
+      ]
+    },
+    {
+      "start": 18.5,
+      "end": 20.72,
+      "text": " Imagine pontos numa grade elástica.",
+      "words": [
+        {
+          "start": 18.5,
+          "end": 18.86,
+          "text": " Imagine"
+        },
+        {
+          "start": 18.86,
+          "end": 19.38,
+          "text": " pontos"
+        },
+        {
+          "start": 19.38,
+          "end": 19.64,
+          "text": " numa"
+        },
+        {
+          "start": 19.64,
+          "end": 19.98,
+          "text": " grade"
+        },
+        {
+          "start": 19.98,
+          "end": 20.72,
+          "text": " elástica."
+        }
+      ]
+    },
+    {
+      "start": 21.12,
+      "end": 24.88,
+      "text": " Quando a grade quece, as distâncias em que os pontos aumentam.",
+      "words": [
+        {
+          "start": 21.12,
+          "end": 21.28,
+          "text": " Quando"
+        },
+        {
+          "start": 21.28,
+          "end": 21.44,
+          "text": " a"
+        },
+        {
+          "start": 21.44,
+          "end": 21.68,
+          "text": " grade"
+        },
+        {
+          "start": 21.68,
+          "end": 22.24,
+          "text": " quece,"
+        },
+        {
+          "start": 22.46,
+          "end": 22.58,
+          "text": " as"
+        },
+        {
+          "start": 22.58,
+          "end": 23.24,
+          "text": " distâncias"
+        },
+        {
+          "start": 23.24,
+          "end": 23.54,
+          "text": " em"
+        },
+        {
+          "start": 23.54,
+          "end": 23.64,
+          "text": " que"
+        },
+        {
+          "start": 23.64,
+          "end": 23.82,
+          "text": " os"
+        },
+        {
+          "start": 23.82,
+          "end": 24.12,
+          "text": " pontos"
+        },
+        {
+          "start": 24.12,
+          "end": 24.88,
+          "text": " aumentam."
+        }
+      ]
+    },
+    {
+      "start": 25.28,
+      "end": 26.8,
+      "text": " A grade é só uma analogia.",
+      "words": [
+        {
+          "start": 25.28,
+          "end": 25.48,
+          "text": " A"
+        },
+        {
+          "start": 25.48,
+          "end": 25.74,
+          "text": " grade"
+        },
+        {
+          "start": 25.74,
+          "end": 25.82,
+          "text": " é"
+        },
+        {
+          "start": 25.82,
+          "end": 26.02,
+          "text": " só"
+        },
+        {
+          "start": 26.02,
+          "end": 26.12,
+          "text": " uma"
+        },
+        {
+          "start": 26.12,
+          "end": 26.8,
+          "text": " analogia."
+        }
+      ]
+    },
+    {
+      "start": 27.12,
+      "end": 29.06,
+      "text": " Suas bordas não são bordas do universo.",
+      "words": [
+        {
+          "start": 27.12,
+          "end": 27.32,
+          "text": " Suas"
+        },
+        {
+          "start": 27.32,
+          "end": 27.72,
+          "text": " bordas"
+        },
+        {
+          "start": 27.72,
+          "end": 27.84,
+          "text": " não"
+        },
+        {
+          "start": 27.84,
+          "end": 28.04,
+          "text": " são"
+        },
+        {
+          "start": 28.04,
+          "end": 28.5,
+          "text": " bordas"
+        },
+        {
+          "start": 28.5,
+          "end": 28.62,
+          "text": " do"
+        },
+        {
+          "start": 28.62,
+          "end": 29.06,
+          "text": " universo."
+        }
+      ]
+    },
+    {
+      "start": 29.740000000000002,
+      "end": 31.7,
+      "text": " Escou outro ponto para observar.",
+      "words": [
+        {
+          "start": 29.740000000000002,
+          "end": 30.28,
+          "text": " Escou"
+        },
+        {
+          "start": 30.28,
+          "end": 30.5,
+          "text": " outro"
+        },
+        {
+          "start": 30.5,
+          "end": 30.78,
+          "text": " ponto"
+        },
+        {
+          "start": 30.78,
+          "end": 31.0,
+          "text": " para"
+        },
+        {
+          "start": 31.0,
+          "end": 31.7,
+          "text": " observar."
+        }
+      ]
+    },
+    {
+      "start": 32.04,
+      "end": 34.44,
+      "text": " Ele também verá os demais se afastando.",
+      "words": [
+        {
+          "start": 32.04,
+          "end": 32.24,
+          "text": " Ele"
+        },
+        {
+          "start": 32.24,
+          "end": 32.56,
+          "text": " também"
+        },
+        {
+          "start": 32.56,
+          "end": 32.94,
+          "text": " verá"
+        },
+        {
+          "start": 32.94,
+          "end": 33.1,
+          "text": " os"
+        },
+        {
+          "start": 33.1,
+          "end": 33.36,
+          "text": " demais"
+        },
+        {
+          "start": 33.36,
+          "end": 33.66,
+          "text": " se"
+        },
+        {
+          "start": 33.66,
+          "end": 34.44,
+          "text": " afastando."
+        }
+      ]
+    },
+    {
+      "start": 34.9,
+      "end": 38.78,
+      "text": " Esse efeito não escorre um centro, mas é uma diferença importante.",
+      "words": [
+        {
+          "start": 34.9,
+          "end": 35.1,
+          "text": " Esse"
+        },
+        {
+          "start": 35.1,
+          "end": 35.44,
+          "text": " efeito"
+        },
+        {
+          "start": 35.44,
+          "end": 35.62,
+          "text": " não"
+        },
+        {
+          "start": 35.62,
+          "end": 36.08,
+          "text": " escorre"
+        },
+        {
+          "start": 36.08,
+          "end": 36.16,
+          "text": " um"
+        },
+        {
+          "start": 36.16,
+          "end": 36.74,
+          "text": " centro,"
+        },
+        {
+          "start": 37.22,
+          "end": 37.44,
+          "text": " mas"
+        },
+        {
+          "start": 37.44,
+          "end": 37.54,
+          "text": " é"
+        },
+        {
+          "start": 37.54,
+          "end": 37.64,
+          "text": " uma"
+        },
+        {
+          "start": 37.64,
+          "end": 37.96,
+          "text": " diferença"
+        },
+        {
+          "start": 37.96,
+          "end": 38.78,
+          "text": " importante."
+        }
+      ]
+    },
+    {
+      "start": 39.28,
+      "end": 42.34,
+      "text": " Estamos no centro da região que conseguimos observar.",
+      "words": [
+        {
+          "start": 39.28,
+          "end": 39.5,
+          "text": " Estamos"
+        },
+        {
+          "start": 39.5,
+          "end": 39.72,
+          "text": " no"
+        },
+        {
+          "start": 39.72,
+          "end": 39.98,
+          "text": " centro"
+        },
+        {
+          "start": 39.98,
+          "end": 40.26,
+          "text": " da"
+        },
+        {
+          "start": 40.26,
+          "end": 40.64,
+          "text": " região"
+        },
+        {
+          "start": 40.64,
+          "end": 40.9,
+          "text": " que"
+        },
+        {
+          "start": 40.9,
+          "end": 41.52,
+          "text": " conseguimos"
+        },
+        {
+          "start": 41.52,
+          "end": 42.34,
+          "text": " observar."
+        }
+      ]
+    },
+    {
+      "start": 42.76,
+      "end": 46.14,
+      "text": " Isso acontece porque a luz leva tempo para chegar até nós.",
+      "words": [
+        {
+          "start": 42.76,
+          "end": 42.94,
+          "text": " Isso"
+        },
+        {
+          "start": 42.94,
+          "end": 43.36,
+          "text": " acontece"
+        },
+        {
+          "start": 43.36,
+          "end": 43.86,
+          "text": " porque"
+        },
+        {
+          "start": 43.86,
+          "end": 44.06,
+          "text": " a"
+        },
+        {
+          "start": 44.06,
+          "end": 44.2,
+          "text": " luz"
+        },
+        {
+          "start": 44.2,
+          "end": 44.54,
+          "text": " leva"
+        },
+        {
+          "start": 44.54,
+          "end": 44.9,
+          "text": " tempo"
+        },
+        {
+          "start": 44.9,
+          "end": 45.18,
+          "text": " para"
+        },
+        {
+          "start": 45.18,
+          "end": 45.48,
+          "text": " chegar"
+        },
+        {
+          "start": 45.48,
+          "end": 45.86,
+          "text": " até"
+        },
+        {
+          "start": 45.86,
+          "end": 46.14,
+          "text": " nós."
+        }
+      ]
+    },
+    {
+      "start": 46.78,
+      "end": 49.62,
+      "text": " Outro observador teria o seu próprio região observável.",
+      "words": [
+        {
+          "start": 46.78,
+          "end": 47.0,
+          "text": " Outro"
+        },
+        {
+          "start": 47.0,
+          "end": 47.6,
+          "text": " observador"
+        },
+        {
+          "start": 47.6,
+          "end": 47.86,
+          "text": " teria"
+        },
+        {
+          "start": 47.86,
+          "end": 48.04,
+          "text": " o"
+        },
+        {
+          "start": 48.04,
+          "end": 48.1,
+          "text": " seu"
+        },
+        {
+          "start": 48.1,
+          "end": 48.42,
+          "text": " próprio"
+        },
+        {
+          "start": 48.42,
+          "end": 48.88,
+          "text": " região"
+        },
+        {
+          "start": 48.88,
+          "end": 49.62,
+          "text": " observável."
+        }
+      ]
+    },
+    {
+      "start": 50.08,
+      "end": 52.62,
+      "text": " Não conhecemos o tamanho total do universo.",
+      "words": [
+        {
+          "start": 50.08,
+          "end": 50.24,
+          "text": " Não"
+        },
+        {
+          "start": 50.24,
+          "end": 50.8,
+          "text": " conhecemos"
+        },
+        {
+          "start": 50.8,
+          "end": 51.06,
+          "text": " o"
+        },
+        {
+          "start": 51.06,
+          "end": 51.3,
+          "text": " tamanho"
+        },
+        {
+          "start": 51.3,
+          "end": 51.82,
+          "text": " total"
+        },
+        {
+          "start": 51.82,
+          "end": 52.1,
+          "text": " do"
+        },
+        {
+          "start": 52.1,
+          "end": 52.62,
+          "text": " universo."
+        }
+      ]
+    },
+    {
+      "start": 52.96,
+      "end": 55.26,
+      "text": " Nem sabemos se ele é infinito.",
+      "words": [
+        {
+          "start": 52.96,
+          "end": 53.12,
+          "text": " Nem"
+        },
+        {
+          "start": 53.12,
+          "end": 53.58,
+          "text": " sabemos"
+        },
+        {
+          "start": 53.58,
+          "end": 53.96,
+          "text": " se"
+        },
+        {
+          "start": 53.96,
+          "end": 54.14,
+          "text": " ele"
+        },
+        {
+          "start": 54.14,
+          "end": 54.5,
+          "text": " é"
+        },
+        {
+          "start": 54.5,
+          "end": 55.26,
+          "text": " infinito."
+        }
+      ]
+    },
+    {
+      "start": 55.26,
+      "end": 58.88,
+      "text": " Centro da nossa visão não significa centro do cosmos.",
+      "words": [
+        {
+          "start": 55.26,
+          "end": 56.1,
+          "text": " Centro"
+        },
+        {
+          "start": 56.1,
+          "end": 56.18,
+          "text": " da"
+        },
+        {
+          "start": 56.18,
+          "end": 56.38,
+          "text": " nossa"
+        },
+        {
+          "start": 56.38,
+          "end": 56.88,
+          "text": " visão"
+        },
+        {
+          "start": 56.88,
+          "end": 57.04,
+          "text": " não"
+        },
+        {
+          "start": 57.04,
+          "end": 57.68,
+          "text": " significa"
+        },
+        {
+          "start": 57.68,
+          "end": 58.14,
+          "text": " centro"
+        },
+        {
+          "start": 58.14,
+          "end": 58.34,
+          "text": " do"
+        },
+        {
+          "start": 58.34,
+          "end": 58.88,
+          "text": " cosmos."
+        }
+      ]
+    }
+  ],
+  "scene_checks": [
+    {
+      "scene": "question",
+      "window": [
+        0.0,
+        8.007074829931973
+      ],
+      "expected": "O universo tem um centro? Pelo modelo cosmológico padrão, não existe um lugar especial de onde tudo se afasta.",
+      "recognized": " O  universo  tem  um  centro  pelo  modelo  cosmológico  padrão.  Não  existe  um  lugar  especial  de  onde  tudo  se  afasta.",
+      "similarity": 1.0
+    },
+    {
+      "scene": "big-bang",
+      "window": [
+        8.007074829931973,
+        18.502585034013606
+      ],
+      "expected": "O Big Bang não foi uma bomba explodindo num espaço vazio. Ele descreve um universo que era muito mais quente e denso. Desde então, o próprio espaço se expande.",
+      "recognized": " O  Big  Bang  não  foi  uma  bomba  explodindo  num  espaço  vazio.  Ele  descreve  um  universo  que  era  muito  mais  quente  e  denso.  Desde  então,  o  próprio  espaço  se  expande.",
+      "similarity": 1.0
+    },
+    {
+      "scene": "grid",
+      "window": [
+        18.502585034013606,
+        29.8572335600907
+      ],
+      "expected": "Imagine pontos numa grade elástica. Quando a grade cresce, as distâncias entre os pontos aumentam. A grade é só uma analogia: suas bordas não são bordas do universo.",
+      "recognized": " Imagine  pontos  numa  grade  elástica.  Quando  a  grade  quece,  as  distâncias  em  que  os  pontos  aumentam.  A  grade  é  só  uma  analogia.  Suas  bordas  não  são  bordas  do  universo.",
+      "similarity": 0.9122807017543859
+    },
+    {
+      "scene": "observers",
+      "window": [
+        29.8572335600907,
+        37.264489795918365
+      ],
+      "expected": "Escolha outro ponto para observar. Ele também verá os demais se afastando. Esse efeito não escolhe um centro.",
+      "recognized": " Escou  outro  ponto  para  observar.  Ele  também  verá  os  demais  se  afastando.  Esse  efeito  não  escorre  um  centro,",
+      "similarity": 0.8888888888888888
+    },
+    {
+      "scene": "observable",
+      "window": [
+        37.264489795918365,
+        46.7847619047619
+      ],
+      "expected": "Mas há uma diferença importante. Estamos no centro da região que conseguimos observar. Isso acontece porque a luz leva tempo para chegar até nós.",
+      "recognized": " mas  é  uma  diferença  importante.  Estamos  no  centro  da  região  que  conseguimos  observar.  Isso  acontece  porque  a  luz  leva  tempo  para  chegar  até  nós.",
+      "similarity": 0.9583333333333334
+    },
+    {
+      "scene": "limits",
+      "window": [
+        46.7847619047619,
+        59.590658
+      ],
+      "expected": "Outro observador teria sua própria região observável. Não conhecemos o tamanho total do universo, nem sabemos se ele é infinito. Centro da nossa visão não significa centro do cosmos.",
+      "recognized": " Outro  observador  teria  o  seu  próprio  região  observável.  Não  conhecemos  o  tamanho  total  do  universo.  Nem  sabemos  se  ele  é  infinito.  Centro  da  nossa  visão  não  significa  centro  do  cosmos.",
+      "similarity": 0.9152542372881356
+    }
+  ],
+  "note": "Reconhecimento independente auxilia revisão; não substitui escuta humana nem é alinhamento forçado."
+}
