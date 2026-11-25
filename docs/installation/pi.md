@@ -51,7 +51,7 @@ Preserve every sibling reference, script, template, and asset. Do not edit copie
 Pi can select a skill from its description. When skill commands are enabled, invoke one explicitly with:
 
 ```text
-/skill:route-context
+/skill:orchestrate
 /skill:business-direction
 /skill:model-routing-policy
 ```

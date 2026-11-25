@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "grimoire",
-      "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, covering evidence-backed business planning, perceived-quality web design, and engagement mechanics that produce real behavior.",
-      "version": "0.4.0",
+      "description": "A tool-agnostic catalog of reusable agent skills and composed workflows, with an orchestrator that routes requests and delegates reviewed work to temporary helpers, covering evidence-backed business planning, perceived-quality web design, and engagement mechanics that produce real behavior.",
+      "version": "0.5.0",
       "source": "./",
       "author": {
         "name": "Gabriel Migliatti"

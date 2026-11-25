@@ -15,7 +15,7 @@ In Claude Code, install the whole catalog as a plugin from this repository's own
 /plugin install grimoire@migliatti
 ```
 
-Then invoke the chain entrypoint as `/grimoire:business-direction`.
+Then start with the front door, `/grimoire:orchestrate`. It routes your request to the right skill or runs a reviewed delegation cycle. You can also invoke the chain entrypoint directly as `/grimoire:business-direction`.
 
 To install by hand instead, or to install on another host:
 
@@ -26,9 +26,35 @@ To install by hand instead, or to install on another host:
 
 Canonical skill directories can also be inspected directly before installation. Treat every `skills/<skill-name>/SKILL.md` as the source to copy or link; do not edit a host-specific installed copy and then expect this repository to stay synchronized.
 
+## Front door
+
+- [`orchestrate`](skills/orchestrate/SKILL.md) — routes a request to the narrowest skill, records only actionable routing failures, and runs the brief, implementer, reviewer, and critic cycle for non-trivial work.
+
+> Migration note (0.5.0): `orchestrate` replaces the former `route-context` skill. Invoke `orchestrate` wherever you previously invoked `route-context`.
+
+## How orchestration works
+
+[`orchestrate`](skills/orchestrate/SKILL.md) is the front door. It classifies each request: a trivial one is answered or routed to the narrowest skill; a non-trivial one runs a delegation cycle with temporary helpers. The task brief is the state, not the chat.
+
+```mermaid
+flowchart TD
+    U[User] <--> O[orchestrate]
+    O -->|trivial| R[route to one skill<br/>or answer directly]
+    O -->|non-trivial| B[(brief.md<br/>state, rounds, dossier)]
+    B --> I[implementer]
+    I --> V[reviewer]
+    V -->|REJECTED| I
+    V -->|APPROVED| C[critic]
+    C -->|REJECTED| I
+    C -->|APPROVED| A[approved]
+    A --> O
+```
+
+Each helper is new and receives only its role and the brief path. At most two extra rounds follow the first; after that the orchestrator stops and reports what blocked the work. Helpers never publish, send, or run version-control commands.
+
 ## Chains
 
-[`business-direction`](chains/business-direction.md) is the first chain in the catalog. It coordinates evidence-backed business planning across relevant departments, preserves progress, and produces a final cross-department synthesis. Its manifest is the source of truth for the entrypoint, composition, flow, and persistence model.
+[`orchestration`](chains/orchestration.md) is the front door described above. [`business-direction`](chains/business-direction.md) is the business-planning chain. It coordinates evidence-backed business planning across relevant departments, preserves progress, and produces a final cross-department synthesis. Its manifest is the source of truth for the entrypoint, composition, flow, and persistence model.
 
 ### How skills communicate
 
@@ -77,7 +103,6 @@ These skills define a standalone mode or a focused contract that does not requir
 
 ### Agent operations
 
-- [`route-context`](skills/route-context/SKILL.md) — selects the narrowest available skill for a request and records only actionable routing failures.
 - [`evolve-skills`](skills/evolve-skills/SKILL.md) — improves user-owned skills through explicit evaluations, approval, backups, and regression checks.
 - [`model-routing-policy`](skills/model-routing-policy/SKILL.md) — classifies task complexity, risk, and type; recommends an approved model profile and effort; and produces an auditable escalation or fallback decision when needed.
 
@@ -118,6 +143,7 @@ The orchestration entrypoint and final synthesis skill are documented through th
 ```text
 skills/<skill-name>/SKILL.md   Canonical skill instructions
 chains/<chain-name>.md         Chain composition and guide
+skills/orchestrate/            Front door and task brief template
 docs/authoring.md              Authoring and contribution rules
 docs/installation/             Verified host-specific guidance
 .pi/settings.json              Pi project skill-discovery configuration

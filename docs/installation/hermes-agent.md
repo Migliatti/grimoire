@@ -30,14 +30,14 @@ Hermes documents GitHub repositories with a top-level `skills/` directory as cus
 
 ```shell
 hermes skills tap add Migliatti/grimoire
-hermes skills search route-context
-hermes skills install Migliatti/grimoire/route-context
+hermes skills search orchestrate
+hermes skills install Migliatti/grimoire/orchestrate
 ```
 
 Hermes also documents direct installation of an individual skill from a repository path:
 
 ```shell
-hermes skills install Migliatti/grimoire/skills/route-context
+hermes skills install Migliatti/grimoire/skills/orchestrate
 ```
 
 Inspect the resolved source and security scan before approving installation. Command behavior can change between Hermes versions; use `hermes skills inspect` or the current Hermes documentation when a repository path is not resolved as expected.
@@ -57,7 +57,7 @@ Preserve sibling references, scripts, templates, and assets. A copied installati
 Installed Hermes skills are available as slash commands:
 
 ```text
-/route-context
+/orchestrate
 /business-direction
 ```
 

@@ -16,8 +16,8 @@ The same source states that Claude Code discovers project skills from the starti
 
 Invocation depends on the installation scope documented by that source:
 
-- Personal or project skills: `/business-direction`
-- Plugin skill: `/grimoire:business-direction`, because `grimoire` is the plugin name declared in this repository's `.claude-plugin/plugin.json`.
+- Personal or project skills: `/business-direction`, or `/orchestrate` for the front door
+- Plugin skill: `/grimoire:business-direction` (or `/grimoire:orchestrate` for the front door), because `grimoire` is the plugin name declared in this repository's `.claude-plugin/plugin.json`.
 
 Those are Claude Code host rules. They are not canonical paths in this repository.
 

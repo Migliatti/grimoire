@@ -53,6 +53,10 @@ The four fields are required. Every item in `skills` must be unique and resolve 
 
 A skill may appear in multiple manifests. Reuse the same canonical path rather than forking its contents.
 
+## Orchestrated work
+
+`orchestrate` is the front door of the catalog: it routes each request and, for non-trivial work, opens temporary helpers. A new skill needs a routable `description` that starts with "Use when" and names the situations it covers, because routing compares requests with the available skill descriptions. Workflow skills must not open helpers on their own; delegation belongs to the orchestrator, which owns the brief, the rounds, and the verification.
+
 ## Packaging manifests
 
 Host packaging lives in hidden manifest directories at the repository root: `.claude-plugin/` for the Claude Code plugin and its marketplace entry, and `.codex-plugin/` for the Codex plugin. These files declare metadata and point at the canonical `skills/` directory; they never contain skill instructions and never fork a canonical `SKILL.md`.

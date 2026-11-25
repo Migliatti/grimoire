@@ -144,8 +144,8 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn("Do not draft", text)
             self.assertIn("user answers", text)
 
-    def test_route_context_contract(self) -> None:
-        text = self.read_skill("route-context")
+    def test_orchestrate_contract(self) -> None:
+        text = self.read_skill("orchestrate")
         for required in (
             "user's language",
             "available skill descriptions",
@@ -154,9 +154,36 @@ class SkillContractTests(unittest.TestCase):
             "untrusted data",
             "evolve-skills",
             "explicit user approval",
+            "Learning record",
+            "Never route back",
+            "brief-template.md",
+            "APPROVED",
+            "REJECTED",
+            "economy",
+            "advanced",
+            "two extra rounds",
+            "not independent",
+            "approved by critic",
+            ".grimoire/tasks/<slug>/brief.md",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, text)
+
+    def test_orchestrate_constrains_status_values(self) -> None:
+        text = self.read_skill("orchestrate")
+        for status in ("drafting", "in review", "in critique", "approved", "blocked"):
+            self.assertIn(f"`{status}`", text)
+        self.assertIn("holds exactly one of the listed values and nothing else", text)
+
+    def test_orchestrate_brief_template(self) -> None:
+        path = ROOT / "skills" / "orchestrate" / "brief-template.md"
+        self.assertTrue(path.is_file())
+        text = path.read_text(encoding="utf-8")
+        self.assertGreaterEqual(text.count("(reviewer: do not read)"), 2)
+        self.assertIn("- [ ]", text)
+
+    def test_route_context_was_absorbed(self) -> None:
+        self.assertFalse((ROOT / "skills" / ("route" + "-context")).exists())
 
     def test_evolve_skills_contract(self) -> None:
         text = self.read_skill("evolve-skills")
@@ -416,10 +443,30 @@ class RepositoryIntegrityTests(unittest.TestCase):
         for name in skills:
             self.assertTrue((ROOT / "skills" / name / "SKILL.md").is_file())
 
+    def test_orchestration_manifest(self) -> None:
+        path = ROOT / "chains" / "orchestration.md"
+        manifest = parse_manifest(path.read_text(encoding="utf-8"))
+        self.assertEqual(manifest["name"], "orchestration")
+        self.assertEqual(manifest["entrypoint"], "orchestrate")
+        skills = manifest["skills"]
+        self.assertIsInstance(skills, list)
+        self.assertEqual(len(skills), len(set(skills)))
+        self.assertIn(manifest["entrypoint"], skills)
+        for name in skills:
+            self.assertTrue((ROOT / "skills" / name / "SKILL.md").is_file())
+
+    def test_readme_catalogs_orchestration(self) -> None:
+        text = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("/grimoire:orchestrate", text)
+        self.assertIn("skills/orchestrate/SKILL.md", text)
+        self.assertNotIn("skills/route" + "-context", text)
+        self.assertIn("replaces the former `route" + "-context` skill", text)
+
     def test_catalog_links_exist(self) -> None:
         for relative in (
             "LICENSE",
             "chains/business-direction.md",
+            "chains/orchestration.md",
             "docs/authoring.md",
             "docs/installation/pi.md",
             "docs/installation/claude-code.md",
@@ -446,7 +493,7 @@ class RepositoryIntegrityTests(unittest.TestCase):
         for required in (
             '"skills"',
             "~/.pi/agent/skills/",
-            "/skill:route-context",
+            "/skill:orchestrate",
             '"enableSkillCommands": true',
         ):
             self.assertIn(required, text)
@@ -458,7 +505,7 @@ class RepositoryIntegrityTests(unittest.TestCase):
             "external_dirs",
             "not write-protection boundaries",
             "hermes skills tap add Migliatti/grimoire",
-            "hermes skills install Migliatti/grimoire/skills/route-context",
+            "hermes skills install Migliatti/grimoire/skills/orchestrate",
         ):
             self.assertIn(required, text)
 
@@ -546,12 +593,21 @@ class PackagingManifestTests(unittest.TestCase):
         self.assertEqual(claude["version"], entry["version"])
 
     def test_packaged_plugin_exposes_every_chain_skill(self) -> None:
-        manifest = parse_manifest(
-            (ROOT / "chains" / "business-direction.md").read_text(encoding="utf-8")
-        )
         skills_dir = ROOT / str(self.load(".codex-plugin/plugin.json")["skills"])
-        for name in manifest["skills"]:
-            self.assertTrue((skills_dir / name / "SKILL.md").is_file(), name)
+        chains = sorted((ROOT / "chains").glob("*.md"))
+        self.assertGreaterEqual(len(chains), 2)
+        for chain in chains:
+            manifest = parse_manifest(chain.read_text(encoding="utf-8"))
+            for name in manifest["skills"]:
+                with self.subTest(chain=chain.name, skill=name):
+                    self.assertTrue((skills_dir / name / "SKILL.md").is_file())
+
+    def test_packaged_keywords_cover_orchestration(self) -> None:
+        for relative in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
+            manifest = self.load(relative)
+            for keyword in ("orchestration", "delegation"):
+                self.assertIn(keyword, manifest["keywords"], relative)
+            self.assertEqual(manifest["version"], "0.5.0")
 
 
 if __name__ == "__main__":

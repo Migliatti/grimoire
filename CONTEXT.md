@@ -38,3 +38,19 @@ Identidade reutilizável de um canal ou marca, incluindo cores, fontes, voz e li
 
 **Briefing proposto**:
 Interpretação explícita de um pedido curto, incluindo público, gancho, roteiro e estilo, submetida à revisão. Informações essenciais ausentes sobre produtos ou ofertas exigem esclarecimento.
+
+## Orquestração
+
+**Brief de tarefa**:
+Arquivo escrito pelo orquestrador com objetivo, leituras, decisões do usuário, local de saída, critérios de pronto, limites e o estado da tarefa. É a única coisa que o ajudante recebe, além do papel.
+_Avoid_: Prompt longo colado na mensagem ao ajudante
+
+**Ajudante temporário**:
+Agente aberto para um único papel (implementador, revisor ou crítico) em uma rodada, sem histórico. Não decide, não publica e não controla versão.
+_Avoid_: Subagente permanente
+
+**Rodada**:
+Uma passagem completa do implementador pelo revisor e, se aprovada, pelo crítico. Depois da primeira, são permitidas no máximo duas rodadas extras.
+
+**Dossiê do crítico**:
+Resumo condensado escrito pelo orquestrador para o crítico: pedido, decisões do usuário, resultado, notas do revisor e motivos das reprovações anteriores. Nunca a transcrição.
